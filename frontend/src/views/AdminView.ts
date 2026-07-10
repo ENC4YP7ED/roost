@@ -9,11 +9,15 @@ import { admin, unwrap } from "../api/client.ts";
 import { navigate, store } from "../state/store.ts";
 import { page, statTile, localTime } from "./shared.ts";
 import { AdminNodes, AdminServers, AdminEggs } from "./AdminInfra.ts";
+import { AdminBilling, AdminProducts, AdminOrders } from "./AdminBilling.ts";
 
 const SECTIONS: Array<{ id: string; label: string; icon: string }> = [
   { id: "overview", label: "Overview", icon: "gauge" },
   { id: "settings", label: "Settings", icon: "sliders" },
   { id: "security", label: "Security", icon: "shield-halved" },
+  { id: "billing", label: "Billing", icon: "money-bill" },
+  { id: "products", label: "Plans", icon: "box" },
+  { id: "orders", label: "Orders & invoices", icon: "receipt" },
   { id: "webhooks", label: "Webhooks", icon: "satellite-dish" },
   { id: "locations", label: "Locations", icon: "map-pin" },
   { id: "nodes", label: "Nodes", icon: "hard-drive" },
@@ -56,6 +60,9 @@ function renderSection(section: string, id?: number): HTMLElement {
   switch (section) {
     case "settings": return AdminSettings();
     case "security": return AdminSecurity();
+    case "billing": return AdminBilling();
+    case "products": return AdminProducts();
+    case "orders": return AdminOrders();
     case "webhooks": return AdminWebhooks();
     case "locations": return AdminLocations();
     case "nodes": return AdminNodes(id);

@@ -28,6 +28,9 @@ this project, and carries the same MIT licence.
 - `golang.org/x/crypto` — BSD-3-Clause (bcrypt, ACME/autocert)
 - `github.com/go-sql-driver/mysql` — MPL-2.0 (used only by the database viewer)
 
+The billing integrations talk to the Stripe and Revolut Business REST APIs
+directly over the Go standard library; no payment-provider SDK is vendored.
+
 Run `go mod download && go tool licenses` or inspect `backend/go.sum` for the
 exact pinned versions.
 

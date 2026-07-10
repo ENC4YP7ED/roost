@@ -18,6 +18,7 @@ export type Route =
   | { kind: "dashboard" }
   | { kind: "account"; tab?: string }
   | { kind: "server"; id: string; tab: string }
+  | { kind: "billing"; tab: string }
   | { kind: "admin"; section: string; id?: number };
 
 function parseHash(): Route {
@@ -28,6 +29,8 @@ function parseHash(): Route {
       break;
     case "account":
       return { kind: "account", tab: parts[1] };
+    case "billing":
+      return { kind: "billing", tab: parts[1] ?? "shop" };
     case "admin":
       return { kind: "admin", section: parts[1] ?? "overview", id: parts[2] ? Number(parts[2]) : undefined };
   }
@@ -38,6 +41,7 @@ export function routeHash(route: Route): string {
   switch (route.kind) {
     case "dashboard": return "#/";
     case "account": return `#/account${route.tab ? `/${route.tab}` : ""}`;
+    case "billing": return `#/billing/${route.tab}`;
     case "server": return `#/server/${route.id}/${route.tab}`;
     case "admin": return `#/admin/${route.section}${route.id != null ? `/${route.id}` : ""}`;
   }

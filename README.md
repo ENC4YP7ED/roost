@@ -36,6 +36,7 @@ component library — no frontend framework at all.
 | Egg import by URL | ✗ | ✓ | ✗ | **✓** (PTDL v1 + v2) |
 | Built-in database viewer | ✗ | ✗ | ✗ | **✓** (full phpMyAdmin replacement) |
 | HTTPS | reverse proxy + certbot | reverse proxy + certbot | reverse proxy + certbot | **✓ built-in Let's Encrypt, auto-renewing** |
+| Payments & billing | ✗ | ✗ | ✗ | **✓ Stripe + Revolut, auto-provisioning, EU-compliant invoices** |
 | Login protection | reCAPTCHA | Turnstile | captcha | **rate limiting + Turnstile / reCAPTCHA / hCaptcha, stackable, visible or invisible w/ browser-check gate** |
 | Install | multi-service | installer | multi-service | **`./roost` — done** |
 
@@ -70,6 +71,7 @@ roost/
 │   ├── internal/api/       client + application + remote APIs, scheduler,
 │   │                       webhooks, rate limiting
 │   ├── internal/wings/     daemon client + browser-facing signed URLs
+│   ├── internal/billing/   VAT rules + Stripe & Revolut checkout/webhooks
 │   ├── internal/dbviewer/  vendored GoTypeMyAdmin API (MySQL/MariaDB)
 │   ├── internal/seed/      embedded PTDL egg exports, first-boot admin + node
 │   └── web/                embedded SPA (go:embed)
@@ -91,6 +93,16 @@ roost/
   no external queue worker.
 - **Webhooks** — every activity event can be POSTed to configured endpoints
   (`Admin → Webhooks`), with event-prefix filters.
+- **Billing & payments** — `Admin → Billing` turns the panel into a shop:
+  define plans (a price plus a server spec), and when a customer pays via
+  **Stripe** or **Revolut Business** the server is provisioned automatically
+  and an invoice is issued. Webhook signatures are verified (HMAC, replay
+  window); recurring subscriptions suspend/resume the server on
+  cancellation/renewal. Invoices are **EU-compliant**: gapless per-year
+  sequential numbers, seller & buyer identities with VAT ids, a net/VAT/gross
+  breakdown, and automatic **reverse charge** for EU B2B customers with a valid
+  VAT id. Money is stored in integer minor units — no float rounding touches a
+  total. Provider secrets are write-only and never returned to the browser.
 - **Automatic HTTPS** — `Admin → Security` takes a domain and a contact
   email and Roost obtains + renews a Let's Encrypt certificate itself
   (`autocert`, HTTP-01). No certbot, no nginx. It serves ACME challenges on
@@ -133,14 +145,16 @@ make check          # go vet + tsc --noEmit
   vectors) and JWT signing; every store constraint and cascade; the whole HTTP
   surface end-to-end through `httptest`, including auth, API-key scoping,
   subuser permissions, the wings remote protocol, SFTP auth, the cron engine,
-  CAPTCHA and TLS validation, and the database-viewer gate. A fake wings daemon
-  covers the daemon client, and every bundled egg is parsed.
+  CAPTCHA and TLS validation, the database-viewer gate, and the whole billing
+  flow (VAT/reverse-charge maths, Stripe & Revolut webhook signature
+  verification, and the webhook → auto-provision → gapless-invoice path). A fake
+  wings daemon covers the daemon client, and every bundled egg is parsed.
 - **Frontend** (`*.test.ts`) — the signal/effect core (including dependency
   re-collection and nested effects), hash routing, and the API client.
 - **End-to-end** (`e2e/`) — boots the built binary against a throwaway database
   and drives Chromium: login, admin area, the new-server flow, the database
   viewer gate, and the security surface.
 
-Coverage: `auth` 91%, `tlsmgr` 94%, `wings` 89%, `seed` 76%, `store` 57%,
-`api` 52% (the remainder is largely wings-proxy plumbing exercised by the
-end-to-end suite).
+Coverage: `auth` 91%, `tlsmgr` 94%, `wings` 89%, `billing` 85%, `seed` 76%,
+`store` 62%, `api` 56% (the remainder is largely wings-proxy plumbing exercised
+by the end-to-end suite).

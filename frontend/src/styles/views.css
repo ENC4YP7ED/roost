@@ -301,3 +301,17 @@ button.rst-breadcrumb__item:hover { background: var(--gray-100); color: var(--te
 }
 .rst-captcha__state { display: inline-flex; width: 16px; justify-content: center; }
 .rst-captcha__ok { color: var(--success); }
+
+/* ---- Billing shop -------------------------------------------------------------- */
+.rst-shop { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--sp-4); }
+.rst-plan {
+  display: flex; flex-direction: column; gap: var(--sp-3);
+  background: var(--gray-50); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: var(--sp-5);
+}
+.rst-plan:hover { border-color: var(--border-strong); }
+.rst-plan__name { font-size: var(--fs-lg); font-weight: var(--fw-semibold); color: var(--text-strong); }
+.rst-plan__price { display: flex; align-items: baseline; gap: 4px; }
+.rst-plan__amount { font-size: var(--fs-2xl); font-weight: var(--fw-bold); color: var(--text-strong); letter-spacing: -0.02em; }
+.rst-plan .rst-kv { margin: var(--sp-2) 0; }
+.rst-plan__buy { margin-top: auto; }

@@ -156,6 +156,18 @@ export const client = {
 
   permissions: () => http.get<ApiItem<{ permissions: string[] }>>("/api/client/permissions"),
 
+  billing: {
+    products: () => http.get<ApiList>("/api/client/billing/products"),
+    profile: () => http.get<ApiItem>("/api/client/billing/profile"),
+    saveProfile: (body: unknown) => http.put<ApiItem>("/api/client/billing/profile", body),
+    checkout: (product_id: number, provider: string) =>
+      http.post<{ data: { redirect_url: string; order: string } }>("/api/client/billing/checkout", { product_id, provider }),
+    orders: () => http.get<ApiList>("/api/client/billing/orders"),
+    subscriptions: () => http.get<ApiList>("/api/client/billing/subscriptions"),
+    invoices: () => http.get<ApiList>("/api/client/billing/invoices"),
+    invoiceURL: (number: string) => `/api/client/billing/invoices/${encodeURIComponent(number)}/html`,
+  },
+
   accountApi: {
     updateEmail: (email: string, password: string) => http.put("/api/client/account/email", { email, password }),
     updatePassword: (current_password: string, password: string) => http.put("/api/client/account/password", { current_password, password }),
@@ -270,5 +282,16 @@ export const admin = {
   captcha: {
     list: () => http.get<{ data: Array<{ id: number; provider: string; mode: string; site_key: string; secret?: string }> }>("/api/application/captcha"),
     save: (layers: Array<{ provider: string; mode: string; site_key: string; secret: string }>) => http.put("/api/application/captcha", layers),
+  },
+
+  billing: {
+    settings: () => http.get<Record<string, unknown>>("/api/application/billing/settings"),
+    saveSettings: (body: unknown) => http.put<Record<string, unknown>>("/api/application/billing/settings", body),
+    products: () => http.get<ApiList>("/api/application/billing/products"),
+    createProduct: (body: unknown) => http.post<ApiItem>("/api/application/billing/products", body),
+    updateProduct: (id: number, body: unknown) => http.patch<ApiItem>(`/api/application/billing/products/${id}`, body),
+    removeProduct: (id: number) => http.del(`/api/application/billing/products/${id}`),
+    orders: () => http.get<ApiList>("/api/application/billing/orders"),
+    invoices: () => http.get<ApiList>("/api/application/billing/invoices"),
   },
 };

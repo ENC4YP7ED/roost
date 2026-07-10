@@ -399,4 +399,123 @@ CREATE INDEX IF NOT EXISTS idx_activity_subject ON activity_log_subjects (subjec
 CREATE INDEX IF NOT EXISTS idx_allocations_server ON allocations (server_id);
 CREATE INDEX IF NOT EXISTS idx_servers_owner ON servers (owner_id);
 CREATE INDEX IF NOT EXISTS idx_subusers_user ON subusers (user_id);
+
+-- ============================================================ billing
+-- All monetary amounts are stored as integer minor units (e.g. euro cents)
+-- alongside an ISO-4217 currency, so no floating-point rounding ever touches
+-- an invoice total. VAT rates are basis points (1900 = 19.00%).
+
+-- A plan a customer can buy: pricing plus the server specification that gets
+-- provisioned automatically once payment clears.
+CREATE TABLE IF NOT EXISTS products (
+  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  name             TEXT NOT NULL,
+  description      TEXT NOT NULL DEFAULT '',
+  price_cents      INTEGER NOT NULL,
+  currency         TEXT NOT NULL DEFAULT 'EUR',
+  billing_interval TEXT NOT NULL DEFAULT 'month', -- one_time | month | year
+  egg_id           INTEGER NOT NULL REFERENCES eggs(id),
+  node_id          INTEGER REFERENCES nodes(id),   -- NULL = auto-pick a node
+  docker_image     TEXT NOT NULL DEFAULT '',
+  memory           INTEGER NOT NULL,
+  swap             INTEGER NOT NULL DEFAULT 0,
+  disk             INTEGER NOT NULL,
+  io               INTEGER NOT NULL DEFAULT 500,
+  cpu              INTEGER NOT NULL DEFAULT 0,
+  databases        INTEGER NOT NULL DEFAULT 0,
+  allocations      INTEGER NOT NULL DEFAULT 1,
+  backups          INTEGER NOT NULL DEFAULT 0,
+  active           INTEGER NOT NULL DEFAULT 1,
+  sort             INTEGER NOT NULL DEFAULT 0,
+  created_at       TEXT NOT NULL,
+  updated_at       TEXT NOT NULL
+);
+
+-- A customer's billing identity, used to build compliant invoices. A VAT id
+-- present + a country different from the seller's triggers EU reverse charge.
+CREATE TABLE IF NOT EXISTS billing_profiles (
+  user_id     INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  name        TEXT NOT NULL DEFAULT '',
+  company     TEXT NOT NULL DEFAULT '',
+  address     TEXT NOT NULL DEFAULT '',
+  city        TEXT NOT NULL DEFAULT '',
+  postal_code TEXT NOT NULL DEFAULT '',
+  country     TEXT NOT NULL DEFAULT '',
+  vat_id      TEXT NOT NULL DEFAULT '',
+  updated_at  TEXT NOT NULL
+);
+
+-- A recurring plan a customer holds. The provider owns the schedule; we mirror
+-- its state so we can suspend/unsuspend the linked server.
+CREATE TABLE IF NOT EXISTS subscriptions (
+  id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid               TEXT NOT NULL UNIQUE,
+  user_id            INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  product_id         INTEGER NOT NULL REFERENCES products(id),
+  provider           TEXT NOT NULL,             -- stripe | revolut
+  provider_ref       TEXT NOT NULL DEFAULT '',  -- subscription id at the provider
+  status             TEXT NOT NULL DEFAULT 'pending', -- pending|active|past_due|canceled
+  server_id          INTEGER REFERENCES servers(id) ON DELETE SET NULL,
+  current_period_end TEXT,
+  created_at         TEXT NOT NULL,
+  updated_at         TEXT NOT NULL
+);
+
+-- One purchase attempt. Drives checkout, then provisioning on payment.
+CREATE TABLE IF NOT EXISTS orders (
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid            TEXT NOT NULL UNIQUE,
+  user_id         INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  product_id      INTEGER NOT NULL REFERENCES products(id),
+  provider        TEXT NOT NULL,               -- stripe | revolut
+  provider_ref    TEXT NOT NULL DEFAULT '',    -- checkout session / order id
+  status          TEXT NOT NULL DEFAULT 'pending', -- pending|paid|failed|canceled|refunded
+  net_cents       INTEGER NOT NULL,
+  vat_cents       INTEGER NOT NULL DEFAULT 0,
+  gross_cents     INTEGER NOT NULL,
+  vat_rate        INTEGER NOT NULL DEFAULT 0,  -- basis points
+  reverse_charge  INTEGER NOT NULL DEFAULT 0,
+  currency        TEXT NOT NULL DEFAULT 'EUR',
+  server_id       INTEGER REFERENCES servers(id) ON DELETE SET NULL,
+  subscription_id INTEGER REFERENCES subscriptions(id) ON DELETE SET NULL,
+  created_at      TEXT NOT NULL,
+  updated_at      TEXT NOT NULL,
+  paid_at         TEXT
+);
+
+-- A gapless, immutable accounting record. Seller and buyer details are
+-- snapshotted as JSON so a later profile edit never rewrites history.
+CREATE TABLE IF NOT EXISTS invoices (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  number         TEXT NOT NULL UNIQUE,
+  user_id        INTEGER NOT NULL REFERENCES users(id),
+  order_id       INTEGER REFERENCES orders(id),
+  status         TEXT NOT NULL DEFAULT 'issued', -- issued | paid | void
+  currency       TEXT NOT NULL DEFAULT 'EUR',
+  net_cents      INTEGER NOT NULL,
+  vat_cents      INTEGER NOT NULL,
+  gross_cents    INTEGER NOT NULL,
+  vat_rate       INTEGER NOT NULL,
+  reverse_charge INTEGER NOT NULL DEFAULT 0,
+  seller         TEXT NOT NULL DEFAULT '{}', -- JSON snapshot
+  buyer          TEXT NOT NULL DEFAULT '{}', -- JSON snapshot
+  lines          TEXT NOT NULL DEFAULT '[]', -- JSON line items
+  notes          TEXT NOT NULL DEFAULT '',
+  issued_at      TEXT NOT NULL,
+  due_at         TEXT,
+  paid_at        TEXT,
+  created_at     TEXT NOT NULL
+);
+
+-- Per-year gapless invoice sequence, incremented inside the issuing tx.
+CREATE TABLE IF NOT EXISTS invoice_sequences (
+  year TEXT PRIMARY KEY,
+  last INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_orders_user ON orders (user_id);
+CREATE INDEX IF NOT EXISTS idx_orders_provider_ref ON orders (provider, provider_ref);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_user ON subscriptions (user_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_provider_ref ON subscriptions (provider, provider_ref);
+CREATE INDEX IF NOT EXISTS idx_invoices_user ON invoices (user_id);
 `

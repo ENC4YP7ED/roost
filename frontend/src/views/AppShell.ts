@@ -7,6 +7,7 @@ import { DashboardView } from "./DashboardView.ts";
 import { AccountView } from "./AccountView.ts";
 import { ServerView } from "./ServerView.ts";
 import { AdminView } from "./AdminView.ts";
+import { BillingView } from "./BillingView.ts";
 
 /** Topbar + routed content. Server & admin views bring their own sidebars. */
 export function AppShell(onLogout: () => void): HTMLElement {
@@ -30,6 +31,9 @@ export function AppShell(onLogout: () => void): HTMLElement {
     { label: "Sign out", icon: "right-from-bracket", danger: true, onSelect: async () => { await auth.logout(); onLogout(); } },
   ], "bottom-end");
 
+  const billingBtn = el("button.rst-topbar__action", { onclick: () => navigate({ kind: "billing", tab: "shop" }) },
+    icon("cart-shopping"), el("span", {}, "Billing"));
+
   const topbar = el("header.rst-topbar",
     el("button.rst-topbar__brand", { onclick: () => navigate({ kind: "dashboard" }) },
       el("div.rst-topbar__logo", icon("feather-pointed")),
@@ -37,6 +41,7 @@ export function AppShell(onLogout: () => void): HTMLElement {
     ),
     Breadcrumb(),
     el("span.spacer"),
+    billingBtn,
     adminBtn,
     userMenu,
   );
@@ -55,6 +60,7 @@ function renderRoute(route: Route): HTMLElement {
   switch (route.kind) {
     case "dashboard": return DashboardView();
     case "account": return AccountView(route.tab);
+    case "billing": return BillingView(route.tab);
     case "server": return ServerView(route.id, route.tab);
     case "admin": return AdminView(route.section, route.id);
   }
@@ -76,6 +82,7 @@ function Breadcrumb(): HTMLElement {
       crumb.append(sep(), part(route.tab, "angles-right"));
     }
     if (route.kind === "account") crumb.append(sep(), part("Account", "user-gear"));
+    if (route.kind === "billing") crumb.append(sep(), part("Billing", "cart-shopping"));
     if (route.kind === "admin") {
       crumb.append(sep(), part("Admin", "screwdriver-wrench", () => navigate({ kind: "admin", section: "overview" })));
       crumb.append(sep(), part(route.section, "angles-right"));
