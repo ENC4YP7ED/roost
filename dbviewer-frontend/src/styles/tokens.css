@@ -1,0 +1,114 @@
+/*
+ * Design tokens — vendored from GoTypeMyAdmin.
+ *
+ * Philosophy: true-OLED black canvas, a strict grayscale ramp, no chroma in
+ * the chrome. The only colour the UI ever shows is semantic (success / danger /
+ * warning) and even those are desaturated to sit calmly on black.
+ */
+
+:root {
+  /* ---- grayscale ramp (0 = pure black, 1000 = pure white) ---- */
+  --gray-0: #000000;   /* OLED canvas */
+  --gray-25: #050505;
+  --gray-50: #0a0a0a;  /* raised surface */
+  --gray-75: #101010;
+  --gray-100: #161616; /* card / panel */
+  --gray-150: #1d1d1d;
+  --gray-200: #242424; /* hover surface */
+  --gray-300: #2e2e2e; /* border strong */
+  --gray-400: #3a3a3a;
+  --gray-500: #565656; /* disabled text */
+  --gray-600: #6e6e6e;
+  --gray-700: #8a8a8a; /* muted text */
+  --gray-800: #b4b4b4; /* secondary text */
+  --gray-900: #d8d8d8; /* primary text */
+  --gray-950: #ededed;
+  --gray-1000: #ffffff;
+
+  /* ---- semantic surfaces ---- */
+  --bg: var(--gray-0);
+  --bg-raised: var(--gray-50);
+  --bg-panel: var(--gray-100);
+  --bg-hover: var(--gray-200);
+  --bg-active: var(--gray-300);
+  --bg-input: var(--gray-25);
+
+  /* ---- borders / dividers ---- */
+  --border: #1c1c1c;
+  --border-strong: var(--gray-300);
+  --border-focus: var(--gray-700);
+
+  /* ---- text ---- */
+  --text: var(--gray-900);
+  --text-strong: var(--gray-1000);
+  --text-muted: var(--gray-700);
+  --text-faint: var(--gray-600);
+  --text-disabled: var(--gray-500);
+
+  /* ---- semantic accents (desaturated for OLED) ---- */
+  --accent: var(--gray-1000);          /* primary action = white on black */
+  --accent-contrast: var(--gray-0);
+  --success: #6ee7a8;
+  --success-dim: #1a3326;
+  --danger: #f49a9a;
+  --danger-dim: #3a1f1f;
+  --warning: #e8cf8a;
+  --warning-dim: #332b18;
+  --info: #9db8e8;
+
+  /* ---- typography ---- */
+  --font-ui: "Inter", "Inter var", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-md: 13px;
+  --fs-lg: 15px;
+  --fs-xl: 18px;
+  --fs-2xl: 24px;
+
+  --lh-tight: 1.25;
+  --lh-normal: 1.5;
+
+  --fw-normal: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  /* ---- spacing scale (4px base) ---- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+
+  /* ---- radii ---- */
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 9px;
+  --r-xl: 14px;
+  --r-full: 999px;
+
+  /* ---- elevation (rings, not glows — keep it flat on OLED) ---- */
+  --ring: 0 0 0 1px var(--border);
+  --ring-strong: 0 0 0 1px var(--border-strong);
+  --shadow-pop: 0 8px 28px -6px rgba(0, 0, 0, 0.9), 0 0 0 1px var(--border-strong);
+
+  /* ---- motion ---- */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dur-fast: 90ms;
+  --dur: 150ms;
+  --dur-slow: 240ms;
+
+  /* ---- layout ---- */
+  --sidebar-w: 280px;
+  --topbar-h: 48px;
+  --z-toast: 1000;
+  --z-modal: 900;
+  --z-menu: 800;
+  --z-tooltip: 850;
+}

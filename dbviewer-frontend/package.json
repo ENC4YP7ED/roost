@@ -1,0 +1,21 @@
+{
+  "name": "roost-dbviewer-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Modern TypeScript frontend for GoTypeMyAdmin — a phpMyAdmin reimagining.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7"
+  },
+  "dependencies": {
+    "@fontsource/inter": "^5.1.0",
+    "@fontsource/jetbrains-mono": "^5.1.0",
+    "@fortawesome/fontawesome-free": "^6.7.2"
+  }
+}

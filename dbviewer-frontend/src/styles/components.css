@@ -1,0 +1,541 @@
+/* ===========================================================================
+ * Component styles — vendored from GoTypeMyAdmin. OLED black, grayscale, flat.
+ * ======================================================================== */
+
+.fa-icon {
+  font-size: 0.92em;
+  line-height: 1;
+  width: 1em;
+  text-align: center;
+  flex: none;
+}
+
+/* ---- Button --------------------------------------------------------------- */
+.gtma-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  border: 1px solid var(--border-strong);
+  background: var(--gray-100);
+  color: var(--text);
+  border-radius: var(--r-md);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease);
+  user-select: none;
+}
+.gtma-btn--sm { height: 28px; padding: 0 10px; font-size: var(--fs-sm); }
+.gtma-btn--md { height: 34px; padding: 0 14px; }
+.gtma-btn--lg { height: 40px; padding: 0 18px; font-size: var(--fs-lg); }
+.gtma-btn--block { width: 100%; }
+.gtma-btn--icon { padding: 0; aspect-ratio: 1; width: auto; }
+.gtma-btn--icon.gtma-btn--sm { width: 28px; }
+.gtma-btn--icon.gtma-btn--md { width: 34px; }
+
+.gtma-btn:hover { background: var(--gray-200); border-color: var(--gray-400); }
+.gtma-btn:active { background: var(--gray-300); }
+.gtma-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.gtma-btn--primary {
+  background: var(--gray-1000);
+  color: var(--gray-0);
+  border-color: var(--gray-1000);
+  font-weight: var(--fw-semibold);
+}
+.gtma-btn--primary:hover { background: var(--gray-900); border-color: var(--gray-900); }
+.gtma-btn--primary:active { background: var(--gray-800); }
+
+.gtma-btn--ghost { background: transparent; border-color: transparent; color: var(--text-muted); }
+.gtma-btn--ghost:hover { background: var(--gray-150); color: var(--text); border-color: transparent; }
+
+.gtma-btn--subtle { background: transparent; border-color: var(--border); }
+.gtma-btn--subtle:hover { background: var(--gray-100); }
+
+.gtma-btn--danger {
+  background: var(--danger-dim);
+  border-color: #532c2c;
+  color: var(--danger);
+}
+.gtma-btn--danger:hover { background: #4a2727; border-color: #6e3636; }
+
+.gtma-btn-spin { animation: gtma-spin 0.7s linear infinite; }
+
+/* ---- TextInput ------------------------------------------------------------ */
+.gtma-input { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.gtma-input__label {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--text-muted);
+}
+.gtma-input__wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  background: var(--bg-input);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  padding: 0 10px;
+  min-width: 0;
+  overflow: hidden;
+  transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+.gtma-input--md { height: 36px; }
+.gtma-input--sm { height: 30px; }
+.gtma-input__wrap:focus-within {
+  border-color: var(--border-focus);
+  background: var(--gray-75);
+}
+.gtma-input--error { border-color: #6e3636 !important; }
+.gtma-input__icon { color: var(--text-faint); font-size: var(--fs-sm); }
+.gtma-input__field {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  background: none;
+  border: none;
+  outline: none;
+  appearance: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--fs-md);
+  line-height: normal;
+  height: 100%;
+}
+.gtma-input__field::placeholder { color: var(--text-disabled); }
+.gtma-input__clear, .gtma-input__toggle {
+  display: inline-flex;
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  padding: 2px;
+  border-radius: var(--r-sm);
+}
+.gtma-input__clear:hover, .gtma-input__toggle:hover { color: var(--text); background: var(--gray-200); }
+.gtma-input__hint { font-size: var(--fs-xs); color: var(--text-faint); }
+.gtma-input__error { font-size: var(--fs-xs); color: var(--danger); }
+
+.gtma-textarea {
+  background: var(--bg-input);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  color: var(--text);
+  padding: 10px 12px;
+  font-size: var(--fs-md);
+  resize: vertical;
+  outline: none;
+  width: 100%;
+}
+.gtma-textarea:focus { border-color: var(--border-focus); }
+
+/* ---- Select --------------------------------------------------------------- */
+.gtma-select {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  background: var(--bg-input);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  color: var(--text);
+  padding: 0 10px;
+  min-width: 120px;
+  justify-content: space-between;
+}
+.gtma-select--md { height: 36px; }
+.gtma-select--sm { height: 30px; font-size: var(--fs-sm); }
+.gtma-select:hover { border-color: var(--gray-400); }
+.gtma-select.is-open { border-color: var(--border-focus); }
+.gtma-select__value { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; }
+.gtma-select__value-icon, .gtma-select__chevron { color: var(--text-faint); font-size: var(--fs-sm); }
+.gtma-select.is-open .gtma-select__chevron { transform: rotate(180deg); }
+.gtma-select__chevron { transition: transform var(--dur) var(--ease); }
+
+.gtma-select__panel {
+  background: var(--gray-75);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-pop);
+  overflow: hidden;
+  min-width: 160px;
+  animation: gtma-pop-in var(--dur) var(--ease);
+}
+.gtma-select__search-wrap {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: 8px 10px; border-bottom: 1px solid var(--border);
+  color: var(--text-faint);
+}
+.gtma-select__search {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--text); font-family: inherit; font-size: var(--fs-sm);
+}
+.gtma-select__menu { max-height: 280px; overflow-y: auto; padding: 4px; }
+.gtma-select__option {
+  display: flex; align-items: center; gap: var(--sp-2);
+  width: 100%; padding: 7px 8px; background: none; border: none;
+  color: var(--text); border-radius: var(--r-sm); font-size: var(--fs-md);
+  text-align: left;
+}
+.gtma-select__option:hover { background: var(--gray-200); }
+.gtma-select__option.is-selected { background: var(--gray-150); color: var(--text-strong); }
+.gtma-select__opt-icon { color: var(--text-faint); width: 1em; }
+.gtma-select__check { margin-left: auto; color: var(--text-strong); }
+.gtma-select__empty { padding: 14px; text-align: center; color: var(--text-faint); font-size: var(--fs-sm); }
+
+/* ---- Popover layer / Menu ------------------------------------------------- */
+.gtma-popover-layer { z-index: var(--z-menu); }
+
+.gtma-menu {
+  min-width: 190px;
+  background: var(--gray-75);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-pop);
+  padding: 5px;
+  animation: gtma-pop-in var(--dur) var(--ease);
+}
+.gtma-menu__item {
+  display: flex; align-items: center; gap: var(--sp-3);
+  width: 100%; padding: 7px 9px; background: none; border: none;
+  color: var(--text); border-radius: var(--r-sm); font-size: var(--fs-md);
+  text-align: left;
+}
+.gtma-menu__item:hover { background: var(--gray-200); }
+.gtma-menu__item--disabled { color: var(--text-disabled); pointer-events: none; }
+.gtma-menu__item--danger { color: var(--danger); }
+.gtma-menu__item--danger:hover { background: var(--danger-dim); }
+.gtma-menu__icon { width: 1em; color: var(--text-faint); flex: none; }
+.gtma-menu__item--danger .gtma-menu__icon { color: var(--danger); }
+.gtma-menu__label { flex: 1; }
+.gtma-menu__shortcut { color: var(--text-faint); font-size: var(--fs-xs); }
+.gtma-menu__chevron { color: var(--text-faint); }
+.gtma-menu__sep { height: 1px; background: var(--border); margin: 5px 4px; }
+.gtma-menu__header {
+  padding: 6px 9px 4px; font-size: var(--fs-xs); text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text-faint); font-weight: var(--fw-semibold);
+}
+
+/* ---- Collapse ------------------------------------------------------------- */
+.gtma-collapse { border-bottom: 1px solid var(--border); }
+.gtma-collapse__header {
+  display: flex; align-items: center; gap: var(--sp-2);
+  width: 100%; padding: 10px 12px; background: none; border: none;
+  color: var(--text); font-size: var(--fs-md); font-weight: var(--fw-medium);
+  text-align: left;
+}
+.gtma-collapse__header:hover { background: var(--gray-50); }
+.gtma-collapse__chevron { color: var(--text-faint); transition: transform var(--dur) var(--ease); font-size: var(--fs-sm); }
+.gtma-collapse.is-open .gtma-collapse__chevron { transform: rotate(90deg); }
+.gtma-collapse__icon { color: var(--text-muted); }
+.gtma-collapse__badge {
+  background: var(--gray-200); color: var(--text-muted);
+  font-size: var(--fs-xs); padding: 1px 7px; border-radius: var(--r-full);
+}
+.gtma-collapse__body { height: 0; overflow: hidden; transition: height var(--dur-slow) var(--ease); }
+.gtma-collapse__inner { padding: 4px 12px 12px; }
+
+/* ---- Scroller ------------------------------------------------------------- */
+.gtma-scroller { position: relative; min-height: 0; min-width: 0; flex: 1; overflow: hidden; }
+.gtma-scroller__viewport {
+  position: absolute; inset: 0; overflow: auto;
+  scrollbar-width: none;
+}
+.gtma-scroller__viewport::-webkit-scrollbar { width: 0; height: 0; }
+.gtma-scroller__track { position: absolute; opacity: 0; transition: opacity var(--dur) var(--ease); }
+.gtma-scroller__track--v { top: 2px; bottom: 2px; right: 2px; width: 8px; }
+.gtma-scroller__track--h { left: 2px; right: 2px; bottom: 2px; height: 8px; }
+.gtma-scroller:hover .gtma-scroller__track,
+.gtma-scroller.is-scrolling .gtma-scroller__track,
+.gtma-scroller.is-dragging .gtma-scroller__track { opacity: 1; }
+.gtma-scroller__thumb {
+  position: absolute; background: var(--gray-300); border-radius: var(--r-full);
+  transition: background var(--dur-fast) var(--ease);
+}
+.gtma-scroller__thumb--v { right: 0; width: 8px; top: 0; }
+.gtma-scroller__thumb--h { bottom: 0; height: 8px; left: 0; }
+.gtma-scroller__thumb:hover, .gtma-scroller.is-dragging .gtma-scroller__thumb { background: var(--gray-500); }
+
+/* ---- Tabs ----------------------------------------------------------------- */
+.gtma-tabs__list {
+  display: flex; gap: 2px; padding: 0 var(--sp-4);
+  border-bottom: 1px solid var(--border); flex: none;
+}
+.gtma-tabs__tab {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: 10px 14px; background: none; border: none;
+  color: var(--text-muted); font-size: var(--fs-md); font-weight: var(--fw-medium);
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+.gtma-tabs__tab:hover { color: var(--text); }
+.gtma-tabs__tab.is-active { color: var(--text-strong); border-bottom-color: var(--gray-1000); }
+.gtma-tabs__tab .fa-icon { font-size: var(--fs-sm); color: inherit; }
+.gtma-tabs__badge {
+  background: var(--gray-200); color: var(--text-muted);
+  font-size: var(--fs-xs); padding: 0 6px; border-radius: var(--r-full);
+}
+.gtma-tabs__panel { display: flex; min-height: 0; overflow: hidden; }
+.gtma-tabs__panel > * { flex: 1; min-width: 0; }
+
+/* ---- Modal ---------------------------------------------------------------- */
+.gtma-modal__overlay {
+  position: fixed; inset: 0; z-index: var(--z-modal);
+  background: rgba(0, 0, 0, 0.66);
+  backdrop-filter: blur(2px);
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--sp-4);
+  animation: gtma-fade-in var(--dur) var(--ease);
+}
+.gtma-modal__overlay.is-closing { animation: gtma-fade-in var(--dur) var(--ease) reverse; }
+.gtma-modal {
+  width: 480px; max-width: 100%; max-height: 88vh;
+  background: var(--gray-50);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-pop);
+  display: flex; flex-direction: column;
+  animation: gtma-pop-in var(--dur-slow) var(--ease);
+}
+.gtma-modal__header {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-5); border-bottom: 1px solid var(--border);
+}
+.gtma-modal__title-icon { color: var(--text-muted); }
+.gtma-modal__title { font-size: var(--fs-lg); font-weight: var(--fw-semibold); color: var(--text-strong); flex: 1; }
+.gtma-modal__close {
+  background: none; border: none; color: var(--text-faint);
+  padding: 5px; border-radius: var(--r-sm);
+}
+.gtma-modal__close:hover { background: var(--gray-200); color: var(--text); }
+.gtma-modal__body { padding: var(--sp-5); overflow: auto; }
+.gtma-modal__footer {
+  display: flex; justify-content: flex-end; gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-5); border-top: 1px solid var(--border);
+}
+.gtma-confirm { color: var(--text-muted); line-height: var(--lh-normal); }
+.gtma-confirm b { color: var(--text-strong); }
+
+/* ---- Toast ---------------------------------------------------------------- */
+.gtma-toasts {
+  position: fixed; bottom: var(--sp-5); right: var(--sp-5); z-index: var(--z-toast);
+  display: flex; flex-direction: column; gap: var(--sp-2); max-width: 380px;
+}
+.gtma-toast {
+  display: flex; align-items: flex-start; gap: var(--sp-3);
+  background: var(--gray-100);
+  border: 1px solid var(--border-strong);
+  border-left-width: 3px;
+  border-radius: var(--r-md);
+  padding: 11px 12px;
+  box-shadow: var(--shadow-pop);
+  animation: gtma-pop-in var(--dur-slow) var(--ease);
+}
+.gtma-toast.is-leaving { animation: gtma-toast-out var(--dur) var(--ease) forwards; }
+@keyframes gtma-toast-out { to { opacity: 0; transform: translateX(12px); } }
+.gtma-toast__icon { margin-top: 1px; font-size: var(--fs-lg); }
+.gtma-toast--success { border-left-color: var(--success); }
+.gtma-toast--success .gtma-toast__icon { color: var(--success); }
+.gtma-toast--error { border-left-color: var(--danger); }
+.gtma-toast--error .gtma-toast__icon { color: var(--danger); }
+.gtma-toast--warning { border-left-color: var(--warning); }
+.gtma-toast--warning .gtma-toast__icon { color: var(--warning); }
+.gtma-toast--info { border-left-color: var(--info); }
+.gtma-toast--info .gtma-toast__icon { color: var(--info); }
+.gtma-toast__content { flex: 1; min-width: 0; }
+.gtma-toast__title { font-weight: var(--fw-semibold); color: var(--text-strong); font-size: var(--fs-sm); }
+.gtma-toast__msg { color: var(--text-muted); font-size: var(--fs-sm); word-break: break-word; }
+.gtma-toast__close { background: none; border: none; color: var(--text-faint); padding: 2px; }
+.gtma-toast__close:hover { color: var(--text); }
+
+/* ---- Tooltip -------------------------------------------------------------- */
+.gtma-tooltip {
+  position: fixed; z-index: var(--z-tooltip);
+  background: var(--gray-300); color: var(--text-strong);
+  font-size: var(--fs-xs); font-weight: var(--fw-medium);
+  padding: 4px 8px; border-radius: var(--r-sm);
+  pointer-events: none; white-space: nowrap;
+  opacity: 0; transform: translateY(2px);
+  transition: opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+}
+.gtma-tooltip.is-visible { opacity: 1; transform: translateY(0); }
+
+/* ---- Tree ----------------------------------------------------------------- */
+.gtma-tree { padding: var(--sp-2) var(--sp-2) var(--sp-4); user-select: none; }
+.gtma-tree__children { display: none; }
+.gtma-tree__node.is-open > .gtma-tree__children { display: block; }
+.gtma-tree__row {
+  display: flex; align-items: center; gap: var(--sp-2);
+  height: 28px; padding-right: 8px; border-radius: var(--r-sm);
+  cursor: pointer; color: var(--text-muted); font-size: var(--fs-md);
+}
+.gtma-tree__row:hover { background: var(--gray-100); color: var(--text); }
+.gtma-tree__row.is-selected { background: var(--gray-200); color: var(--text-strong); }
+.gtma-tree__chevron, .gtma-tree__chevron-spacer { width: 12px; font-size: 10px; color: var(--text-faint); transition: transform var(--dur) var(--ease); }
+.gtma-tree__node.is-open > .gtma-tree__row .gtma-tree__chevron { transform: rotate(90deg); }
+.gtma-tree__icon { color: var(--text-faint); font-size: var(--fs-sm); }
+.gtma-tree__row.is-selected .gtma-tree__icon { color: var(--text); }
+.gtma-tree__label { flex: 1; }
+.gtma-tree__badge {
+  font-size: 10px; color: var(--text-faint); background: var(--gray-100);
+  padding: 0 6px; border-radius: var(--r-full); font-family: var(--font-mono);
+}
+.gtma-tree__loading, .gtma-tree__empty, .gtma-tree__error {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: 6px 8px 6px 34px; font-size: var(--fs-sm); color: var(--text-faint);
+}
+.gtma-tree__error { color: var(--danger); }
+
+/* ---- DataGrid ------------------------------------------------------------- */
+.gtma-grid__scroll { overflow: auto; flex: 1; min-height: 0; }
+.gtma-grid { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; font-size: var(--fs-sm); }
+.gtma-grid thead th {
+  position: sticky; top: 0; z-index: 2;
+  background: var(--gray-75);
+  border-bottom: 1px solid var(--border-strong);
+  text-align: left; font-weight: var(--fw-semibold);
+  color: var(--text-muted); white-space: nowrap;
+  padding: 0;
+}
+.gtma-grid__th-inner { display: flex; align-items: center; gap: var(--sp-2); padding: 10px 14px; }
+.gtma-grid__th.is-sortable { cursor: pointer; }
+.gtma-grid__th.is-sortable:hover { background: var(--gray-100); color: var(--text); }
+.gtma-grid__th.is-sorted { color: var(--text-strong); }
+.gtma-grid__col-type { color: var(--text-faint); font-size: 10px; font-weight: var(--fw-normal); }
+.gtma-grid__pk { color: var(--warning); font-size: 10px; }
+.gtma-grid__sort { color: var(--text-strong); font-size: 10px; }
+.gtma-grid__rownum {
+  position: sticky; left: 0; z-index: 1;
+  background: var(--gray-50); color: var(--text-faint);
+  text-align: center; padding: 9px 12px; font-family: var(--font-mono);
+  font-size: var(--fs-xs); border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border); user-select: none; vertical-align: middle;
+}
+thead .gtma-grid__rownum { z-index: 3; background: var(--gray-75); }
+/* Beat `.gtma-grid thead th { text-align:left; padding:0 }` for the # header so
+   it matches the body row-number cells (centered + same left inset). */
+.gtma-grid thead th.gtma-grid__rownum { text-align: center; padding: 9px 12px 9px var(--sp-5); }
+.gtma-grid__cell {
+  padding: 9px 14px; border-bottom: 1px solid var(--border);
+  color: var(--text); max-width: 460px; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;
+  line-height: 1.5;
+}
+.gtma-grid__row:hover .gtma-grid__cell { background: var(--gray-25); }
+.gtma-grid__row:hover .gtma-grid__rownum { background: var(--gray-100); color: var(--text-muted); }
+.gtma-grid__cell--null { color: var(--text-disabled); font-style: italic; font-size: var(--fs-xs); }
+.gtma-grid__cell--num { text-align: right; color: var(--gray-950); }
+.gtma-grid__empty { padding: 28px; text-align: center; color: var(--text-faint); }
+/* Breathing room at the table's left/right edges. The cell backgrounds still
+   reach the container border (no black gutters) — only the content is inset. */
+.gtma-grid__rownum { padding-left: var(--sp-5); }
+.gtma-grid__cell:last-child { padding-right: var(--sp-6); }
+.gtma-grid__th:last-child .gtma-grid__th-inner { padding-right: var(--sp-6); }
+
+/* ---- CodeEditor ----------------------------------------------------------- */
+.gtma-editor {
+  display: flex; background: var(--gray-25);
+  border: 1px solid var(--border-strong); border-radius: var(--r-md);
+  overflow: hidden; font-family: var(--font-mono); font-size: var(--fs-md);
+  line-height: 1.6;
+}
+.gtma-editor:focus-within { border-color: var(--border-focus); }
+.gtma-editor__gutter {
+  flex: none; padding: 12px 0; text-align: right; overflow: hidden;
+  background: var(--gray-50); color: var(--text-disabled);
+  user-select: none; min-width: 44px;
+}
+.gtma-editor__lineno { padding: 0 12px; font-size: var(--fs-sm); }
+.gtma-editor__surface { position: relative; flex: 1; min-width: 0; }
+.gtma-editor__highlight, .gtma-editor__textarea {
+  margin: 0; padding: 12px 14px; border: 0; font: inherit;
+  white-space: pre; overflow: auto; tab-size: 2;
+}
+.gtma-editor__highlight {
+  position: absolute; inset: 0; pointer-events: none;
+  color: var(--text); overflow: hidden;
+}
+.gtma-editor__textarea {
+  position: relative; width: 100%; height: 100%; min-height: 160px;
+  background: transparent; color: transparent; caret-color: var(--text-strong);
+  resize: none; outline: none;
+}
+.gtma-editor__textarea::placeholder { color: var(--text-disabled); }
+.gtma-editor__textarea::selection { background: var(--gray-400); }
+.tok-keyword { color: var(--gray-1000); font-weight: var(--fw-semibold); }
+.tok-string { color: var(--success); }
+.tok-number { color: var(--info); }
+.tok-comment { color: var(--text-disabled); font-style: italic; }
+.tok-punct { color: var(--text-muted); }
+.tok-ident { color: var(--gray-900); }
+
+/* ---- Badge ---------------------------------------------------------------- */
+.gtma-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: var(--fs-xs); font-weight: var(--fw-medium);
+  padding: 2px 9px; border-radius: var(--r-full);
+  background: var(--gray-150); color: var(--text-muted);
+  white-space: nowrap;
+}
+.gtma-badge .fa-icon { font-size: 9px; }
+.gtma-badge--outline { background: transparent; border: 1px solid var(--border-strong); }
+.gtma-badge--success { background: var(--success-dim); color: var(--success); }
+.gtma-badge--danger { background: var(--danger-dim); color: var(--danger); }
+.gtma-badge--warning { background: var(--warning-dim); color: var(--warning); }
+.gtma-badge--info { background: #1b2738; color: var(--info); }
+
+/* ---- Spinner / Loading / Empty -------------------------------------------- */
+.gtma-spinner {
+  display: inline-block; border: 2px solid var(--gray-300);
+  border-top-color: var(--gray-800); border-radius: 50%;
+  animation: gtma-spin 0.65s linear infinite;
+}
+.gtma-loading {
+  display: flex; align-items: center; justify-content: center; gap: var(--sp-3);
+  padding: var(--sp-12); color: var(--text-muted); height: 100%;
+}
+.gtma-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--sp-2); padding: var(--sp-12); text-align: center; height: 100%;
+}
+.gtma-empty__icon { font-size: 30px; color: var(--gray-400); margin-bottom: var(--sp-2); }
+.gtma-empty__title { font-size: var(--fs-lg); font-weight: var(--fw-semibold); color: var(--text); }
+.gtma-empty__desc { color: var(--text-faint); max-width: 340px; }
+
+/* ---- Segmented ------------------------------------------------------------ */
+.gtma-segmented {
+  display: inline-flex; background: var(--gray-100);
+  border: 1px solid var(--border-strong); border-radius: var(--r-md); padding: 2px;
+}
+.gtma-segmented__btn {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: 5px 11px; background: none; border: none; border-radius: var(--r-sm);
+  color: var(--text-muted); font-size: var(--fs-sm); font-weight: var(--fw-medium);
+}
+.gtma-segmented__btn:hover { color: var(--text); }
+.gtma-segmented__btn.is-active { background: var(--gray-300); color: var(--text-strong); }
+
+/* ---- Field / Switch ------------------------------------------------------- */
+.gtma-field { display: flex; flex-direction: column; gap: 3px; }
+.gtma-field__label { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-faint); }
+.gtma-field__value { font-size: var(--fs-md); color: var(--text-strong); }
+
+.gtma-switch { display: inline-flex; align-items: center; gap: var(--sp-2); background: none; border: none; color: var(--text); }
+.gtma-switch__track {
+  width: 34px; height: 20px; border-radius: var(--r-full);
+  background: var(--gray-300); padding: 2px; transition: background var(--dur) var(--ease);
+}
+.gtma-switch__track.is-on { background: var(--gray-1000); }
+.gtma-switch__knob {
+  display: block; width: 16px; height: 16px; border-radius: 50%;
+  background: var(--gray-700); transition: transform var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.gtma-switch__track.is-on .gtma-switch__knob { transform: translateX(14px); background: var(--gray-0); }
+.gtma-switch__label { font-size: var(--fs-sm); }
+
+kbd {
+  font-family: var(--font-mono); font-size: 10px;
+  background: var(--gray-200); border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm); padding: 1px 5px; color: var(--text-muted);
+}

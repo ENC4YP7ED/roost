@@ -1,0 +1,305 @@
+/* ===========================================================================
+ * View & layout styles — vendored from GoTypeMyAdmin.
+ * ======================================================================== */
+
+/* ---- Connect -------------------------------------------------------------- */
+.gtma-connect {
+  position: relative; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.gtma-connect__grid {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(var(--gray-50) 1px, transparent 1px),
+    linear-gradient(90deg, var(--gray-50) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 60% 60% at 50% 40%, #000 30%, transparent 75%);
+}
+.gtma-connect__card {
+  position: relative; z-index: 1; width: 420px; max-width: 92vw;
+  background: var(--gray-50);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-xl);
+  padding: var(--sp-8);
+  box-shadow: var(--shadow-pop);
+  display: flex; flex-direction: column; gap: var(--sp-6);
+  animation: gtma-pop-in var(--dur-slow) var(--ease);
+}
+.gtma-connect__brand { display: flex; align-items: center; gap: var(--sp-3); }
+.gtma-connect__logo {
+  width: 44px; height: 44px; border-radius: var(--r-lg);
+  display: flex; align-items: center; justify-content: center;
+  background: var(--gray-1000); color: var(--gray-0); font-size: 20px;
+}
+.gtma-connect__name { font-size: var(--fs-xl); font-weight: var(--fw-bold); color: var(--text-strong); letter-spacing: -0.01em; }
+.gtma-connect__tag { font-size: var(--fs-sm); }
+.gtma-connect__form { display: flex; flex-direction: column; gap: var(--sp-4); }
+.gtma-connect__row { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
+.gtma-connect__host { flex: 2 1 180px; min-width: 0; }
+.gtma-connect__port { flex: 1 1 90px; min-width: 0; }
+.gtma-connect__footer { display: flex; gap: var(--sp-2); align-items: center; font-size: var(--fs-xs); }
+.gtma-connect__footer .fa-icon { flex: none; }
+
+/* ---- Shell / Topbar ------------------------------------------------------- */
+.gtma-shell { height: 100%; }
+.gtma-topbar {
+  display: flex; align-items: center; gap: var(--sp-4);
+  height: var(--topbar-h); flex: none;
+  padding: 0 var(--sp-4);
+  border-bottom: 1px solid var(--border);
+  background: var(--gray-25);
+}
+.gtma-topbar__brand { display: flex; align-items: center; gap: var(--sp-2); cursor: pointer; background: none; border: none; }
+.gtma-topbar__logo {
+  width: 26px; height: 26px; border-radius: var(--r-md);
+  display: flex; align-items: center; justify-content: center;
+  background: var(--gray-1000); color: var(--gray-0); font-size: 13px;
+}
+.gtma-topbar__name { font-weight: var(--fw-bold); color: var(--text-strong); letter-spacing: -0.01em; }
+.gtma-topbar__action {
+  display: flex; align-items: center; gap: var(--sp-2);
+  background: none; border: 1px solid var(--border); color: var(--text-muted);
+  padding: 6px 12px; border-radius: var(--r-md); font-size: var(--fs-sm); font-weight: var(--fw-medium);
+}
+.gtma-topbar__action:hover { background: var(--gray-100); color: var(--text); }
+.gtma-topbar__conn {
+  display: flex; align-items: center; gap: var(--sp-2);
+  background: var(--gray-75); border: 1px solid var(--border-strong);
+  padding: 5px 10px; border-radius: var(--r-md); color: var(--text-muted);
+  font-size: var(--fs-sm); max-width: 280px;
+}
+.gtma-topbar__conn:hover { background: var(--gray-100); }
+.gtma-topbar__dot { color: var(--success); font-size: 8px; }
+
+.gtma-breadcrumb { display: flex; align-items: center; gap: var(--sp-1); }
+.gtma-breadcrumb__item {
+  display: flex; align-items: center; gap: 6px;
+  background: none; border: none; color: var(--text-muted);
+  font-size: var(--fs-sm); padding: 4px 8px; border-radius: var(--r-sm); font-family: inherit;
+}
+button.gtma-breadcrumb__item:hover { background: var(--gray-100); color: var(--text); }
+.gtma-breadcrumb__icon { color: var(--text-faint); font-size: var(--fs-sm); }
+.gtma-breadcrumb__sep { color: var(--gray-400); font-size: 10px; }
+
+/* ---- Body / Sidebar ------------------------------------------------------- */
+.gtma-body { display: flex; align-items: stretch; min-height: 0; }
+.gtma-sidebar {
+  width: var(--sidebar-w); flex: none;
+  border-right: 1px solid var(--border);
+  background: var(--gray-25);
+  display: flex; flex-direction: column; min-height: 0;
+}
+.gtma-sidebar__head { padding: var(--sp-3) var(--sp-3) var(--sp-2); }
+.gtma-sidebar__home {
+  display: flex; align-items: center; gap: var(--sp-2); width: 100%;
+  background: var(--gray-75); border: 1px solid var(--border);
+  color: var(--text-muted); padding: 7px 10px; border-radius: var(--r-md);
+  font-size: var(--fs-sm); font-weight: var(--fw-medium);
+}
+.gtma-sidebar__home:hover { background: var(--gray-100); color: var(--text); }
+.gtma-sidebar__tools { display: flex; align-items: center; gap: var(--sp-2); padding: 0 var(--sp-3) var(--sp-2); }
+.gtma-sidebar__scroller { flex: 1; min-height: 0; }
+.gtma-sidebar__loading, .gtma-sidebar__empty, .gtma-sidebar__error {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: var(--sp-4); font-size: var(--fs-sm); color: var(--text-faint);
+}
+.gtma-sidebar__error { color: var(--danger); }
+
+.gtma-content { background: var(--bg); overflow: hidden; display: flex; min-width: 0; }
+.gtma-content > * { flex: 1; min-width: 0; }
+
+/* ---- Page scaffold -------------------------------------------------------- */
+.gtma-page, .gtma-home { overflow: auto; }
+.gtma-page__inner, .gtma-home__inner { padding: var(--sp-6) var(--sp-8); display: flex; flex-direction: column; gap: var(--sp-5); }
+.gtma-page__head, .gtma-home__head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: var(--sp-4); flex-wrap: wrap;
+}
+.gtma-page__head > *, .gtma-home__head > * { min-width: 0; }
+.gtma-page__title, .gtma-home__title { overflow-wrap: anywhere; }
+.gtma-page__title, .gtma-home__title {
+  font-size: var(--fs-2xl); font-weight: var(--fw-bold); color: var(--text-strong);
+  letter-spacing: -0.02em; line-height: 1.1;
+}
+
+/* ---- Home ----------------------------------------------------------------- */
+.gtma-home__stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-3); }
+.gtma-stat {
+  display: flex; align-items: center; gap: var(--sp-3);
+  background: var(--gray-50); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: var(--sp-4);
+}
+.gtma-stat__icon {
+  width: 38px; height: 38px; border-radius: var(--r-md);
+  display: flex; align-items: center; justify-content: center;
+  background: var(--gray-100); color: var(--text-muted); font-size: var(--fs-lg);
+}
+.gtma-stat__value { font-size: var(--fs-xl); font-weight: var(--fw-bold); color: var(--text-strong); line-height: 1.1; }
+.gtma-stat__label { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.05em; }
+.gtma-home__server { display: flex; }
+.gtma-home__section { display: flex; flex-direction: column; gap: var(--sp-3); }
+.gtma-home__section-head { display: flex; align-items: baseline; gap: var(--sp-3); }
+.gtma-home__section-head h2 { font-size: var(--fs-lg); font-weight: var(--fw-semibold); color: var(--text-strong); }
+.gtma-home .gtma-grid__scroll, .gtma-page .gtma-grid__scroll {
+  border: 1px solid var(--border); border-radius: var(--r-lg); max-height: 60vh;
+}
+.gtma-home .gtma-grid__cell, .gtma-page .gtma-grid__cell { cursor: default; }
+.gtma-home .gtma-grid__row .gtma-grid__cell:nth-child(2),
+.gtma-page .gtma-grid__row .gtma-grid__cell:nth-child(2) {
+  color: var(--text-strong); font-weight: var(--fw-medium); cursor: pointer;
+}
+.gtma-home .gtma-grid__row .gtma-grid__cell:nth-child(2):hover,
+.gtma-page .gtma-grid__row .gtma-grid__cell:nth-child(2):hover { text-decoration: underline; }
+
+/* ---- Table workspace ------------------------------------------------------ */
+.gtma-table { overflow: hidden; }
+.gtma-table__head { padding: var(--sp-6) var(--sp-8) var(--sp-4); flex: none; }
+.gtma-table .gtma-page__head { align-items: center; }
+
+.gtma-browse { overflow: hidden; }
+/* Inset the grid to align with the inset toolbar content above/below it.
+   Padding lives on this wrapper (outside the scroll viewport), so the sticky
+   #/header columns stay correct and nothing bleeds into the gutter. */
+.gtma-browse__grid { overflow: hidden; padding-inline: var(--sp-5); }
+.gtma-browse__pager {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-5); border-top: 1px solid var(--border);
+  flex: none; background: var(--gray-25);
+}
+.gtma-browse__page { font-size: var(--fs-sm); color: var(--text-muted); padding: 0 var(--sp-2); }
+.gtma-browse__limit { display: flex; align-items: center; gap: 4px; margin-left: var(--sp-3); }
+.gtma-browse__limit-btn {
+  background: none; border: 1px solid transparent; color: var(--text-faint);
+  font-size: var(--fs-xs); padding: 3px 7px; border-radius: var(--r-sm); font-family: var(--font-mono);
+}
+.gtma-browse__limit-btn:hover { background: var(--gray-100); color: var(--text); }
+.gtma-browse__limit-btn.is-active { background: var(--gray-200); color: var(--text-strong); border-color: var(--border-strong); }
+
+/* ---- Structure ------------------------------------------------------------ */
+.gtma-structure { overflow: auto; }
+.gtma-structure__inner { padding: var(--sp-6) var(--sp-8); display: flex; flex-direction: column; gap: var(--sp-6); }
+.gtma-structure__summary {
+  display: flex; gap: var(--sp-8);
+  background: var(--gray-50); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: var(--sp-4) var(--sp-5);
+}
+.gtma-structure__section { display: flex; flex-direction: column; gap: var(--sp-3); }
+.gtma-structure__h {
+  display: flex; align-items: center; gap: var(--sp-2);
+  font-size: var(--fs-md); font-weight: var(--fw-semibold); color: var(--text-strong);
+}
+.gtma-structure__h .fa-icon { color: var(--text-faint); }
+.gtma-structure .gtma-grid__scroll { border: 1px solid var(--border); border-radius: var(--r-lg); }
+
+/* ---- SQL console ---------------------------------------------------------- */
+.gtma-sql { overflow: hidden; }
+.gtma-sql__toolbar {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-5); border-bottom: 1px solid var(--border); flex: none;
+}
+.gtma-sql__hint { display: flex; align-items: center; gap: 3px; font-size: var(--fs-xs); }
+.gtma-sql__editor { padding: var(--sp-4) var(--sp-5); flex: none; }
+.gtma-sql__editor .gtma-editor { max-height: 320px; }
+.gtma-sql__result { border-top: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
+.gtma-sql__meta { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-3) var(--sp-5); flex: none; }
+/* Inset the result grid to match the meta bar (padding on the wrapper, outside
+   the scroll viewport, so the sticky #/header stay correct). */
+.gtma-sql__gridwrap {
+  flex: 1; min-height: 0; display: flex; flex-direction: column;
+  overflow: hidden; padding-inline: var(--sp-5); border-top: 1px solid var(--border);
+}
+.gtma-sql__running { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-8); color: var(--text-muted); justify-content: center; }
+.gtma-sql__error { padding: var(--sp-5); }
+.gtma-sql__error > .row { color: var(--danger); margin-bottom: var(--sp-3); }
+.gtma-sql__error-msg {
+  background: var(--danger-dim); border: 1px solid #532c2c; color: var(--danger);
+  padding: var(--sp-3) var(--sp-4); border-radius: var(--r-md);
+  font-size: var(--fs-sm); white-space: pre-wrap; word-break: break-word;
+}
+
+/* ---- Export --------------------------------------------------------------- */
+.gtma-export { overflow: auto; }
+.gtma-export__inner { padding: var(--sp-6) var(--sp-8); display: flex; flex-direction: column; gap: var(--sp-4); }
+.gtma-export__bar { display: flex; align-items: center; gap: var(--sp-2); }
+.gtma-export__code {
+  background: var(--gray-25); border: 1px solid var(--border-strong);
+  border-radius: var(--r-md); padding: var(--sp-4) var(--sp-5);
+  font-size: var(--fs-sm); color: var(--text); line-height: 1.6;
+  white-space: pre; overflow: auto;
+}
+.gtma-export__code .tok-keyword { color: var(--gray-1000); font-weight: 600; }
+
+.gtma-browse__toolbar {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-5); border-bottom: 1px solid var(--border);
+  flex: none; background: var(--gray-25);
+}
+.gtma-browse__hint { display: flex; align-items: center; gap: 6px; font-size: var(--fs-xs); }
+
+/* ---- Browse filter bar ---------------------------------------------------- */
+.gtma-filter {
+  display: flex; flex-direction: column; gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-5); border-bottom: 1px solid var(--border);
+  background: var(--gray-25); flex: none;
+}
+.gtma-filter__row { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
+.gtma-filter__row .gtma-select { min-width: 130px; }
+.gtma-filter__row .gtma-input { width: 160px; }
+.gtma-filter__chips { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
+.gtma-filter__chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--gray-150); border: 1px solid var(--border-strong);
+  color: var(--text); font-size: var(--fs-xs); padding: 3px 9px; border-radius: var(--r-full);
+}
+.gtma-filter__chip:hover { border-color: var(--gray-500); }
+.gtma-filter__op { color: var(--text-faint); font-weight: var(--fw-semibold); }
+.gtma-filter__val { color: var(--success); }
+.gtma-filter__x { color: var(--text-faint); font-size: 9px; }
+.gtma-filter__chip:hover .gtma-filter__x { color: var(--danger); }
+.gtma-filter__clear {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: none; border: none; color: var(--text-faint);
+  font-size: var(--fs-xs); padding: 3px 6px; border-radius: var(--r-sm);
+}
+.gtma-filter__clear:hover { color: var(--text); background: var(--gray-100); }
+
+/* ---- Foreign-key cell links ---------------------------------------------- */
+.gtma-grid__fk {
+  display: inline-flex; align-items: center; gap: 5px; max-width: 100%;
+  background: none; border: none; padding: 0; color: var(--info);
+  font: inherit; cursor: pointer;
+}
+.gtma-grid__fk .fa-icon { font-size: 9px; opacity: 0.6; }
+.gtma-grid__fk:hover { text-decoration: underline; color: var(--gray-1000); }
+.gtma-grid__fk:hover .fa-icon { opacity: 1; }
+
+/* ---- Row editor ----------------------------------------------------------- */
+.gtma-roweditor { display: flex; flex-direction: column; gap: var(--sp-4); }
+.gtma-roweditor__field { display: flex; flex-direction: column; gap: 6px; }
+.gtma-roweditor__meta { display: flex; align-items: center; gap: var(--sp-2); }
+.gtma-roweditor__name { font-size: var(--fs-sm); font-weight: var(--fw-semibold); color: var(--text-strong); }
+.gtma-roweditor__type { font-size: var(--fs-xs); }
+.gtma-roweditor__toggles { display: flex; gap: 4px; }
+.gtma-roweditor__chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--gray-100); border: 1px solid var(--border-strong);
+  color: var(--text-faint); font-size: 10px; font-weight: var(--fw-medium);
+  padding: 2px 8px; border-radius: var(--r-full); font-family: var(--font-mono);
+}
+.gtma-roweditor__chip .fa-icon { font-size: 8px; }
+.gtma-roweditor__chip:hover { color: var(--text); border-color: var(--gray-400); }
+.gtma-roweditor__chip.is-active { background: var(--gray-1000); color: var(--gray-0); border-color: var(--gray-1000); }
+
+/* ---- Grants --------------------------------------------------------------- */
+.gtma-grants__code {
+  background: var(--gray-25); border: 1px solid var(--border-strong);
+  border-radius: var(--r-md); padding: var(--sp-4);
+  font-size: var(--fs-sm); color: var(--text); line-height: 1.7;
+  white-space: pre-wrap; word-break: break-word;
+}
+
+@media (max-width: 900px) {
+  .gtma-home__stats { grid-template-columns: repeat(2, 1fr); }
+  .gtma-sidebar { width: 220px; }
+}

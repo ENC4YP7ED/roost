@@ -1,0 +1,26 @@
+{
+  "name": "roost-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "TypeScript SPA for Roost \u2014 a Go/TS successor to Pterodactyl, Pelican and Pyrodactyl.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.10",
+    "happy-dom": "^20.10.6",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7",
+    "vitest": "^4.1.10"
+  },
+  "dependencies": {
+    "@fontsource/inter": "^5.1.0",
+    "@fontsource/jetbrains-mono": "^5.1.0",
+    "@fortawesome/fontawesome-free": "^6.7.2"
+  }
+}
