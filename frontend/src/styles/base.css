@@ -145,3 +145,23 @@ input[type="search"]::-webkit-search-cancel-button {
 @keyframes rst-spin {
   to { transform: rotate(360deg); }
 }
+
+/* Respect users who ask the OS to minimise motion: collapse animations and
+ * transitions to near-instant, and make any entrance end in its final state. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* Entrance animations use opacity:0 as their start; force the resting state. */
+  .ptg-landing__title,
+  .ptg-landing__sub,
+  .ptg-landing__hero-inner .row,
+  .ptg-landing__section-head,
+  .ptg-landing__game,
+  .ptg-landing__plan { opacity: 1 !important; }
+}

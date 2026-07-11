@@ -308,8 +308,9 @@ button.rst-breadcrumb__item:hover { background: var(--gray-100); color: var(--te
   display: flex; flex-direction: column; gap: var(--sp-3);
   background: var(--gray-50); border: 1px solid var(--border);
   border-radius: var(--r-lg); padding: var(--sp-5);
+  transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
-.rst-plan:hover { border-color: var(--border-strong); }
+.rst-plan:hover { border-color: var(--border-strong); transform: translateY(-3px); box-shadow: var(--shadow-pop); }
 .rst-plan__name { font-size: var(--fs-lg); font-weight: var(--fw-semibold); color: var(--text-strong); }
 .rst-plan__price { display: flex; align-items: baseline; gap: 4px; }
 .rst-plan__amount { font-size: var(--fs-2xl); font-weight: var(--fw-bold); color: var(--text-strong); letter-spacing: -0.02em; }
@@ -374,7 +375,9 @@ button.rst-breadcrumb__item:hover { background: var(--gray-100); color: var(--te
 .ptg-landing__plan {
   position: relative; border: 1px solid var(--border); border-radius: var(--r-xl);
   padding: var(--sp-6); background: var(--bg-raised); display: flex; flex-direction: column; gap: var(--sp-4);
+  transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
+.ptg-landing__plan:hover { border-color: var(--border-strong); transform: translateY(-3px); box-shadow: var(--shadow-pop); }
 .ptg-landing__plan.is-featured { border-color: var(--border-strong); box-shadow: var(--shadow-pop); }
 .ptg-landing__badge {
   position: absolute; top: -10px; left: var(--sp-6);
@@ -396,6 +399,33 @@ button.rst-breadcrumb__item:hover { background: var(--gray-100); color: var(--te
   .ptg-landing__nav, .ptg-landing__hero, .ptg-landing__games, .ptg-landing__packages { padding-left: var(--sp-4); padding-right: var(--sp-4); }
 }
 
+/* ---- landing entrance choreography ----
+ * Hero copy and each card rises + fades in on mount; cards are staggered so
+ * the grids assemble left-to-right instead of popping in all at once. */
+@keyframes rst-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ptg-landing__title,
+.ptg-landing__sub,
+.ptg-landing__hero-inner .row,
+.ptg-landing__section-head,
+.ptg-landing__game,
+.ptg-landing__plan {
+  opacity: 0;
+  animation: rst-rise var(--dur-slow) var(--ease) forwards;
+}
+.ptg-landing__title { animation-delay: 40ms; }
+.ptg-landing__sub { animation-delay: 120ms; }
+.ptg-landing__hero-inner .row { animation-delay: 200ms; }
+.ptg-landing__section-head { animation-delay: 60ms; }
+/* Stagger the cards within each grid. */
+.ptg-landing__game:nth-child(1), .ptg-landing__plan:nth-child(1) { animation-delay: 60ms; }
+.ptg-landing__game:nth-child(2), .ptg-landing__plan:nth-child(2) { animation-delay: 130ms; }
+.ptg-landing__game:nth-child(3), .ptg-landing__plan:nth-child(3) { animation-delay: 200ms; }
+.ptg-landing__game:nth-child(4), .ptg-landing__plan:nth-child(4) { animation-delay: 270ms; }
+.ptg-landing__game:nth-child(n+5) { animation-delay: 340ms; }
+
 /* ---- shop configurable plan extras ---- */
 .rst-plan { position: relative; }
 .rst-plan.is-configurable { border-color: var(--border-strong); }
@@ -405,8 +435,11 @@ button.rst-breadcrumb__item:hover { background: var(--gray-100); color: var(--te
   font-weight: var(--fw-semibold); background: var(--gray-1000); color: var(--gray-0);
 }
 .rst-range { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; border-radius: var(--r-full); background: var(--bg-active); outline: none; }
-.rst-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; border-radius: var(--r-full); background: var(--gray-1000); cursor: pointer; border: 2px solid var(--gray-0); }
-.rst-range::-moz-range-thumb { width: 18px; height: 18px; border-radius: var(--r-full); background: var(--gray-1000); cursor: pointer; border: 2px solid var(--gray-0); }
+.rst-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; border-radius: var(--r-full); background: var(--gray-1000); cursor: pointer; border: 2px solid var(--gray-0); transition: transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease); }
+.rst-range::-webkit-slider-thumb:hover { transform: scale(1.15); }
+.rst-range:active::-webkit-slider-thumb { transform: scale(1.2); box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.08); }
+.rst-range::-moz-range-thumb { width: 18px; height: 18px; border-radius: var(--r-full); background: var(--gray-1000); cursor: pointer; border: 2px solid var(--gray-0); transition: transform var(--dur-fast) var(--ease); }
+.rst-range::-moz-range-thumb:hover { transform: scale(1.15); }
 .rst-field__label { display: flex; align-items: center; justify-content: space-between; font-size: var(--fs-sm); color: var(--text-muted); font-weight: var(--fw-medium); }
 
 /* "or" divider on the sign-in card (between password and passkey). */
