@@ -8,15 +8,17 @@ import { LoadingState, EmptyState, Badge } from "../components/misc.ts";
 import { client, unwrap } from "../api/client.ts";
 import { store } from "../state/store.ts";
 import { page, timeAgo, localTime } from "./shared.ts";
+import { passkeysSupported, createPasskey } from "../util/webauthn.ts";
 
 export function AccountView(tab?: string): HTMLElement {
   const tabs = Tabs([
     { id: "settings", label: "Settings", icon: "user-gear", render: SettingsTab },
     { id: "2fa", label: "Two-factor", icon: "shield-halved", render: TwoFactorTab },
+    { id: "passkeys", label: "Passkeys", icon: "fingerprint", render: PasskeysTab },
     { id: "api", label: "API keys", icon: "key", render: ApiKeysTab },
     { id: "ssh", label: "SSH keys", icon: "terminal", render: SshKeysTab },
     { id: "activity", label: "Activity", icon: "clock-rotate-left", render: ActivityTab },
-  ], { active: tab && ["settings", "2fa", "api", "ssh", "activity"].includes(tab) ? tab : "settings" });
+  ], { active: tab && ["settings", "2fa", "passkeys", "api", "ssh", "activity"].includes(tab) ? tab : "settings" });
 
   const u = store.user.peek()!;
   return page("Account", { icon: "circle-user", sub: `${u.email} · ${u.admin ? "administrator" : "user"}` }, tabs.el);
@@ -238,6 +240,73 @@ function SshKeysTab(): HTMLElement {
       ),
       keys.length ? el("div.rst-card", el("div.rst-card__title", icon("terminal"), `Your keys (${keys.length})`), list)
         : EmptyState({ icon: "terminal", title: "No SSH keys", description: "Used for SFTP access to your servers." }),
+    );
+  }
+
+  load();
+  return root;
+}
+
+function PasskeysTab(): HTMLElement {
+  const root = el("div.col", { style: { gap: "var(--sp-4)", paddingTop: "var(--sp-4)" } });
+
+  async function addPasskey() {
+    if (!passkeysSupported()) {
+      notify.error("This browser doesn't support passkeys.");
+      return;
+    }
+    const name = TextInput({ label: "Name", icon: "tag", placeholder: "e.g. iPhone, YubiKey" });
+    const ok = await confirmModal({
+      title: "Add a passkey", icon: "fingerprint", confirmLabel: "Continue",
+      message: el("div.col", { style: { gap: "var(--sp-3)" } },
+        el("p.faint", "Give this passkey a name, then follow your browser or device prompt to create it."),
+        name.el,
+      ),
+    });
+    if (!ok) return;
+    try {
+      const { session, publicKey } = await client.accountApi.passkeyRegisterBegin();
+      const attestation = await createPasskey(publicKey);
+      await client.accountApi.passkeyRegisterFinish(session, name.value.trim() || "Passkey", attestation);
+      notify.success("Passkey added");
+      load();
+    } catch (err) {
+      const message = String((err as Error).message);
+      if (!/cancel|abort|NotAllowed/i.test(message)) notify.error(message);
+    }
+  }
+
+  async function load() {
+    root.replaceChildren(LoadingState());
+    const keys = unwrap<any>(await client.accountApi.passkeys());
+    const list = el("div.rst-activity");
+    for (const k of keys) {
+      list.appendChild(el("div.rst-activity__item",
+        icon("fingerprint", { class: "faint" }),
+        el("span", {}, k.name),
+        k.backed_up ? Badge("synced", "info") : null,
+        el("span.rst-activity__meta", k.last_used_at ? `used ${timeAgo(k.last_used_at)}` : "never used"),
+        Button({ icon: "pen", size: "sm", variant: "ghost", title: "Rename", onClick: async () => {
+          const name = TextInput({ label: "Name", icon: "tag", value: k.name });
+          if (!(await confirmModal({ title: "Rename passkey", confirmLabel: "Save", message: name.el }))) return;
+          await client.accountApi.renamePasskey(k.id, name.value.trim() || k.name);
+          load();
+        } }),
+        Button({ icon: "trash", size: "sm", variant: "ghost", title: "Remove", onClick: async () => {
+          if (!(await confirmModal({ title: "Remove passkey", message: `Remove "${k.name}"? You won't be able to sign in with it anymore.`, danger: true }))) return;
+          await client.accountApi.deletePasskey(k.id);
+          load();
+        } }),
+      ));
+    }
+    root.replaceChildren(
+      el("div.rst-card",
+        el("div.rst-card__title", icon("fingerprint"), "Passkeys"),
+        el("p.faint", { style: { marginBottom: "var(--sp-3)" } }, "Sign in without a password using your device's biometrics or a security key. A passkey can also act as your second factor."),
+        el("div.row", Button({ label: "Add a passkey", variant: "primary", icon: "plus", onClick: addPasskey })),
+      ),
+      keys.length ? el("div.rst-card", el("div.rst-card__title", icon("fingerprint"), `Your passkeys (${keys.length})`), list)
+        : EmptyState({ icon: "fingerprint", title: "No passkeys yet", description: "Add one to enable passwordless sign-in." }),
     );
   }
 

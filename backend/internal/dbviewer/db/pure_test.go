@@ -13,7 +13,7 @@ func TestQuoteIdent(t *testing.T) {
 	cases := []struct{ in, want string }{
 		{"users", "`users`"},
 		{"my table", "`my table`"},
-		{"has`tick", "`has``tick`"},         // embedded backtick doubled
+		{"has`tick", "`has``tick`"}, // embedded backtick doubled
 		{"`; DROP TABLE x;--", "```; DROP TABLE x;--`"},
 		{"", "``"},
 	}

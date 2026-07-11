@@ -261,6 +261,7 @@ func (a *API) Mux() *http.ServeMux {
 	a.routesTLS(mux)
 	a.routesBilling(mux)
 	a.routesStorefront(mux)
+	a.routesWebAuthn(mux)
 	return mux
 }
 

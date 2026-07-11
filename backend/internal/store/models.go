@@ -22,6 +22,22 @@ type User struct {
 	UpdatedAt           string
 }
 
+type WebAuthnCredential struct {
+	ID             int64
+	UserID         int64
+	Name           string
+	CredentialID   []byte
+	PublicKey      []byte
+	Attestation    string
+	AAGUID         []byte
+	SignCount      uint32
+	Transports     string // JSON array
+	BackupEligible bool
+	BackupState    bool
+	CreatedAt      string
+	LastUsedAt     *string
+}
+
 type SSHKey struct {
 	ID          int64
 	UserID      int64

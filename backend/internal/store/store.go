@@ -136,6 +136,24 @@ CREATE TABLE IF NOT EXISTS sessions (
   created_at TEXT NOT NULL
 );
 
+-- WebAuthn (passkey) credentials. credential_id / public_key / aaguid are the
+-- raw binary blobs from the authenticator; transports is a JSON array.
+CREATE TABLE IF NOT EXISTS webauthn_credentials (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id       INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name          TEXT NOT NULL DEFAULT 'Passkey',
+  credential_id BLOB NOT NULL UNIQUE,
+  public_key    BLOB NOT NULL,
+  attestation   TEXT NOT NULL DEFAULT '',
+  aaguid        BLOB,
+  sign_count    INTEGER NOT NULL DEFAULT 0,
+  transports    TEXT NOT NULL DEFAULT '[]',
+  backup_eligible INTEGER NOT NULL DEFAULT 0,
+  backup_state    INTEGER NOT NULL DEFAULT 0,
+  created_at    TEXT NOT NULL,
+  last_used_at  TEXT
+);
+
 CREATE TABLE IF NOT EXISTS locations (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
   short      TEXT NOT NULL UNIQUE,

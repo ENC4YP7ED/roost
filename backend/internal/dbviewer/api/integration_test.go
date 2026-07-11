@@ -268,8 +268,8 @@ func TestViewerRemainingEndpoints(t *testing.T) {
 
 	// User lifecycle: create → grants → drop.
 	const user = "roost_api_user"
-	const uhostRaw = "%"      // MySQL host wildcard
-	const uhostURL = "%25"    // %-encoded for the URL path
+	const uhostRaw = "%"                              // MySQL host wildcard
+	const uhostURL = "%25"                            // %-encoded for the URL path
 	v.req("DELETE", "/users/"+user+"/"+uhostURL, nil) // clean slate
 	create := v.req("POST", "/users", map[string]any{
 		"user": user, "host": uhostRaw, "password": "P@ssw0rd-strong!", "privileges": "SELECT", "scope": "*.*"})

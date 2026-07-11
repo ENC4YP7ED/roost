@@ -2,8 +2,9 @@ import { el, icon } from "../core/dom.ts";
 import { Button } from "../components/Button.ts";
 import { TextInput } from "../components/TextInput.ts";
 import { notify } from "../components/Toast.ts";
-import { auth, client } from "../api/client.ts";
+import { auth, client, passkeyLogin } from "../api/client.ts";
 import { store } from "../state/store.ts";
+import { passkeysSupported, getPasskey } from "../util/webauthn.ts";
 import { fetchCaptchaLayers, CaptchaGate, type CaptchaLayer, type CaptchaStack } from "./captcha.ts";
 
 /**
@@ -78,9 +79,28 @@ export function LoginView(onLogin: () => void, options: LoginOptions = {}): HTML
           el("span", {}, `Browser verified (${captchaLayers.length} layer${captchaLayers.length > 1 ? "s" : ""})`))
       : null;
 
+    const passkeyBtn = Button({ label: "Sign in with a passkey", variant: "default", icon: "fingerprint", block: true, onClick: passkeySignIn });
+    async function passkeySignIn() {
+      passkeyBtn.disabled = true;
+      try {
+        const { session, publicKey } = await passkeyLogin.begin();
+        const assertion = await getPasskey(publicKey);
+        await passkeyLogin.finish(session, assertion);
+        await finishLogin();
+      } catch (err) {
+        passkeyBtn.disabled = false;
+        const message = String((err as Error).message);
+        // A user cancelling the OS prompt is not an error worth shouting about.
+        if (!/cancel|abort|NotAllowed/i.test(message)) notify.error(message);
+      }
+    }
+
     const next = el("div.rst-connect__card",
       brand(),
       el("div.rst-connect__form", user.el, pass.el, btn),
+      passkeysSupported()
+        ? el("div.col", { style: { gap: "var(--sp-3)" } }, el("div.rst-connect__or", el("span", "or")), passkeyBtn)
+        : null,
       el("button.rst-connect__link", { onclick: renderForgot }, "Forgot your password?"),
       el("button.rst-connect__link", { onclick: renderRegister }, "Create an account"),
       options.onBack ? el("button.rst-connect__link", { onclick: options.onBack }, "← Back to home") : null,

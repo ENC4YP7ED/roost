@@ -198,7 +198,21 @@ export const client = {
     sshKeys: () => http.get<ApiList>("/api/client/account/ssh-keys"),
     createSshKey: (name: string, public_key: string) => http.post<ApiItem>("/api/client/account/ssh-keys", { name, public_key }),
     deleteSshKey: (fingerprint: string) => http.post("/api/client/account/ssh-keys/remove", { fingerprint }),
+
+    passkeys: () => http.get<ApiList>("/api/client/account/passkeys"),
+    passkeyRegisterBegin: () => http.post<{ session: string; publicKey: any }>("/api/client/account/passkeys/register/begin"),
+    passkeyRegisterFinish: (session: string, name: string, response: unknown) =>
+      http.post<ApiItem>("/api/client/account/passkeys/register/finish", { session, name, response }),
+    renamePasskey: (id: number, name: string) => http.put(`/api/client/account/passkeys/${id}`, { name }),
+    deletePasskey: (id: number) => http.del(`/api/client/account/passkeys/${id}`),
   },
+};
+
+// ---- passkey (WebAuthn) login: public, unauthenticated ----
+export const passkeyLogin = {
+  begin: () => http.post<{ session: string; publicKey: any }>("/auth/passkey/login/begin"),
+  finish: (session: string, response: unknown) =>
+    http.post<{ data: { complete: boolean; user?: any } }>("/auth/passkey/login/finish", { session, response }),
 };
 
 // ---- application (admin) area ----

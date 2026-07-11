@@ -37,6 +37,10 @@ func (s *Store) UserByExternalID(ext string) (*User, error) {
 	return scanUser(s.db.QueryRow(`SELECT `+userCols+` FROM users WHERE external_id = ?`, ext))
 }
 
+func (s *Store) UserByUUID(uuid string) (*User, error) {
+	return scanUser(s.db.QueryRow(`SELECT `+userCols+` FROM users WHERE uuid = ?`, uuid))
+}
+
 // Users returns all users matching an optional case-insensitive filter on
 // username/email, ordered by id.
 func (s *Store) Users(filter string) ([]*User, error) {

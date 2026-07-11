@@ -408,3 +408,8 @@ button.rst-breadcrumb__item:hover { background: var(--gray-100); color: var(--te
 .rst-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; border-radius: var(--r-full); background: var(--gray-1000); cursor: pointer; border: 2px solid var(--gray-0); }
 .rst-range::-moz-range-thumb { width: 18px; height: 18px; border-radius: var(--r-full); background: var(--gray-1000); cursor: pointer; border: 2px solid var(--gray-0); }
 .rst-field__label { display: flex; align-items: center; justify-content: space-between; font-size: var(--fs-sm); color: var(--text-muted); font-weight: var(--fw-medium); }
+
+/* "or" divider on the sign-in card (between password and passkey). */
+.rst-connect__or { display: flex; align-items: center; text-align: center; color: var(--text-faint); font-size: var(--fs-xs); }
+.rst-connect__or::before, .rst-connect__or::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+.rst-connect__or span { padding: 0 var(--sp-3); text-transform: uppercase; letter-spacing: 0.08em; }
