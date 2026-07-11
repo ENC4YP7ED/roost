@@ -282,3 +282,54 @@ func TestOpenRejectsBadCredentials(t *testing.T) {
 		t.Error("Open accepted the wrong password")
 	}
 }
+
+// TestRunScriptStreamAndExecWrite covers the streaming import path and a
+// write-mode Exec (INSERT), which the earlier flow test did not reach.
+func TestRunScriptStreamAndExecWrite(t *testing.T) {
+	host, port := mysqlAddr(t)
+	ctx := context.Background()
+	pool, err := Open(ctx, host, port, "root", mysqlPassword())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer pool.Close()
+
+	const schema = "roost_stream_test"
+	pool.ExecContext(ctx, "DROP DATABASE IF EXISTS "+QuoteIdent(schema))
+	pool.ExecContext(ctx, "CREATE DATABASE "+QuoteIdent(schema))
+	defer pool.ExecContext(ctx, "DROP DATABASE IF EXISTS "+QuoteIdent(schema))
+
+	// Streaming import: build a table + rows, including a line comment and a
+	// block comment that the streaming splitter must skip.
+	script := "-- a leading comment\n" +
+		"CREATE TABLE notes (id INT PRIMARY KEY AUTO_INCREMENT, body TEXT);\n" +
+		"/* block ; comment */ INSERT INTO notes (body) VALUES ('has ; semicolon');\n" +
+		"INSERT INTO notes (body) VALUES ('second');\n"
+	res, err := RunScriptStream(ctx, pool, schema, strings.NewReader(script))
+	if err != nil {
+		t.Fatalf("RunScriptStream: %v", err)
+	}
+	if res.Executed < 3 {
+		t.Errorf("streamed import executed %d statements, want >= 3", res.Executed)
+	}
+
+	// A write-mode Exec (INSERT) reports rows affected.
+	w, err := Exec(ctx, pool, schema, "INSERT INTO notes (body) VALUES ('via exec')", 100)
+	if err != nil {
+		t.Fatalf("Exec write: %v", err)
+	}
+	if w.RowsAffected < 1 {
+		t.Errorf("Exec INSERT RowsAffected = %d, want >= 1", w.RowsAffected)
+	}
+
+	// A failing statement inside a script is reported via FailedAt/Error, not
+	// a returned error (partial progress is preserved).
+	bad := "CREATE TABLE ok (id INT); INSERT INTO nonexistent_xyz VALUES (1);"
+	r2, err := RunScript(ctx, pool, schema, bad)
+	if err != nil {
+		t.Fatalf("RunScript returned a hard error: %v", err)
+	}
+	if r2.FailedAt != 2 || r2.Error == "" {
+		t.Errorf("RunScript should report the failing statement: FailedAt=%d err=%q", r2.FailedAt, r2.Error)
+	}
+}

@@ -439,3 +439,22 @@ func mustParse(s string) *url.URL {
 	}
 	return u
 }
+
+func TestIntervalLabelAndProviderNames(t *testing.T) {
+	cases := map[string]string{"month": "per month", "year": "per year", "one_time": "one-time", "": "one-time"}
+	for in, want := range cases {
+		if got := IntervalLabel(in); got != want {
+			t.Errorf("IntervalLabel(%q) = %q, want %q", in, got, want)
+		}
+	}
+	if NewStripe("k", "w").Name() != "stripe" {
+		t.Error("Stripe.Name")
+	}
+	if NewRevolut("k", "w", false).Name() != "revolut" {
+		t.Error("Revolut.Name")
+	}
+	// baseURL sandbox vs prod.
+	if NewRevolut("k", "w", true).baseURL() == NewRevolut("k", "w", false).baseURL() {
+		t.Error("sandbox and prod base URLs should differ")
+	}
+}

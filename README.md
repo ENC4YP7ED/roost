@@ -156,9 +156,9 @@ make check          # go vet + tsc --noEmit
   viewer gate, and the security surface.
 
 Coverage (`-coverpkg` combined, **whole codebase including the vendored
-viewer**): **80%**. Per package: `tlsmgr` 96%, `store` 95%, `wings` 93%,
-`auth`/`session` 91%, `billing` 85%, `seed` 76%, `api` 75%, `dbviewer/db` 75%,
-`dbviewer/api` 73%. Every request handler, store query, VAT/invoice path,
+viewer**): **85%**. Per package: `tlsmgr` 96%, `store` 95%, `wings` 93%,
+`auth`/`session` 91%, `billing` 88%, `dbviewer/db` 86%, `api` 81%,
+`dbviewer/api` 80%, `seed` 78%. Every request handler, store query, VAT/invoice path,
 payment-webhook branch and database-error branch is exercised; the database
 viewer is covered against a real MariaDB. The residual is a handful of
 genuinely unreachable branches (e.g. `panic`-on-crypto-failure guards).

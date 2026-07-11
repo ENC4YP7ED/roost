@@ -296,3 +296,65 @@ func TestViewerRemainingEndpoints(t *testing.T) {
 		t.Errorf("bad query = %d, want an error status", rec.Code)
 	}
 }
+
+// TestViewerNegativePaths covers handler error branches: malformed bodies,
+// missing parameters, and unknown objects.
+func TestViewerNegativePaths(t *testing.T) {
+	host, port, pw := mysqlEnv(t)
+	v := newViewerHarness(t)
+	rec := v.req("POST", "/connect", map[string]any{"host": host, "port": port, "user": "root", "password": pw})
+	if rec.Code != http.StatusOK {
+		t.Fatalf("connect = %d", rec.Code)
+	}
+	v.token = v.json(rec)["token"].(string)
+
+	const schema = "roost_neg_test"
+	v.req("POST", "/query", map[string]any{"sql": "DROP DATABASE IF EXISTS " + schema})
+	v.req("POST", "/databases", map[string]any{"name": schema})
+	t.Cleanup(func() { v.req("POST", "/query", map[string]any{"sql": "DROP DATABASE IF EXISTS " + schema}) })
+	v.reqRaw("POST", "/import?database="+schema, "CREATE TABLE t (id INT PRIMARY KEY, v VARCHAR(20));")
+
+	// Malformed JSON bodies → 400.
+	for _, path := range []string{
+		"/databases",
+		"/databases/" + schema + "/tables/t/insert",
+		"/databases/" + schema + "/tables/t/update",
+		"/databases/" + schema + "/tables/t/delete",
+		"/databases/" + schema + "/tables/t/search",
+		"/query",
+		"/users",
+	} {
+		if r := v.reqRaw("POST", path, "{bad json"); r.Code != http.StatusBadRequest {
+			t.Errorf("POST %s malformed body = %d, want 400", path, r.Code)
+		}
+	}
+
+	// An empty query is rejected.
+	if r := v.req("POST", "/query", map[string]any{"sql": "   "}); r.Code != http.StatusBadRequest {
+		t.Errorf("empty query = %d, want 400", r.Code)
+	}
+
+	// A create-database with a blank name is rejected.
+	if r := v.req("POST", "/databases", map[string]any{"name": ""}); r.Code != http.StatusBadRequest && r.Code != http.StatusUnprocessableEntity {
+		t.Errorf("blank database name = %d, want 400/422", r.Code)
+	}
+
+	// An invalid search operator is rejected.
+	badSearch := v.req("POST", "/databases/"+schema+"/tables/t/search", map[string]any{
+		"conditions": []map[string]any{{"column": "v", "op": "; DROP", "value": "x"}}, "limit": 10})
+	if badSearch.Code < 400 {
+		t.Errorf("search with an unknown operator = %d, want an error", badSearch.Code)
+	}
+
+	// Browsing an unknown table surfaces a DB error (4xx/5xx), not a panic.
+	if r := v.req("GET", "/databases/"+schema+"/tables/ghost/rows?limit=10", nil); r.Code < 400 {
+		t.Errorf("browse unknown table = %d, want an error", r.Code)
+	}
+
+	// Creating a user with an invalid privilege is rejected before execution.
+	badUser := v.req("POST", "/users", map[string]any{
+		"user": "x", "host": "%", "password": "p", "privileges": "DROP DATABASE", "scope": "*.*"})
+	if badUser.Code < 400 {
+		t.Errorf("create user with a bad privilege = %d, want an error", badUser.Code)
+	}
+}

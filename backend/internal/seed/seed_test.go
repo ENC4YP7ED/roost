@@ -238,3 +238,15 @@ func TestSeedAdminSkippedWhenUsersExist(t *testing.T) {
 		t.Errorf("users = %d, an extra admin was created", len(users))
 	}
 }
+
+// TestRunPropagatesErrors closes the store so Run's error-wrapping branches
+// (seed eggs / admin / local node) are exercised.
+func TestRunPropagatesErrors(t *testing.T) {
+	s := newStore(t)
+	a := api.New(s)
+	s.Close() // every query now errors
+
+	if err := Run(a, s); err == nil {
+		t.Error("Run should surface an error when the store is unusable")
+	}
+}
