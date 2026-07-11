@@ -24,6 +24,27 @@ component library — no frontend framework at all.
 └──────────────┴─────────────────────────────────────────────────┘
 ```
 
+## Screenshots
+
+Public storefront — games catalogue and hosting packages, with a "build your
+own" configurable plan (customer picks RAM + game, priced live):
+
+![Landing page](docs/screenshots/landing.png)
+
+The configurator: RAM slider + game picker with a live quote, straight into
+Stripe/Revolut checkout.
+
+![Package configurator](docs/screenshots/configurator.png)
+
+Passwordless sign-in (passkeys) and public self-registration:
+
+![Sign in](docs/screenshots/login.png) ![Register](docs/screenshots/register.png)
+
+Admin — external identity (OpenID Connect) with a one-click **BundID** preset,
+and per-account passkey management:
+
+![Admin SSO](docs/screenshots/admin-sso.png) ![Passkeys](docs/screenshots/passkeys.png)
+
 ## Why another panel?
 
 | | Pterodactyl | Pelican | Pyrodactyl | **Roost** |
