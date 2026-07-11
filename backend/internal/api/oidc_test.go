@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -140,6 +141,40 @@ func TestOIDCConfigAndGuards(t *testing.T) {
 	cb := h.do("GET", "/auth/oidc/callback?state=x", nil, withCookie(&http.Cookie{Name: "oidc_state", Value: "y"}))
 	if cb.Code != http.StatusFound || cb.Header().Get("Location") == "/" {
 		t.Errorf("bad-state callback should redirect with error, got %d -> %s", cb.Code, cb.Header().Get("Location"))
+	}
+}
+
+func TestOIDCLoginRedirect(t *testing.T) {
+	h := newHarness(t)
+
+	// Not configured yet → the login entry point is unavailable.
+	if res := h.do("GET", "/auth/oidc/login", nil); res.Code != http.StatusServiceUnavailable {
+		t.Errorf("login while unconfigured = %d, want 503", res.Code)
+	}
+
+	idp := newMockIdP(t, "roost-client", "n", nil)
+	h.configureOIDC(idp.server.URL, "roost-client")
+
+	res := h.do("GET", "/auth/oidc/login", nil)
+	if res.Code != http.StatusFound {
+		t.Fatalf("login = %d, want 302: %s", res.Code, res.Body.String())
+	}
+	loc := res.Header().Get("Location")
+	if loc == "" || !strings.HasPrefix(loc, idp.server.URL+"/authorize") {
+		t.Errorf("login should redirect to the provider's authorize endpoint, got %q", loc)
+	}
+	// State + nonce cookies must be planted for the callback to validate.
+	var state, nonce bool
+	for _, c := range res.Result().Cookies() {
+		if c.Name == "oidc_state" && c.Value != "" {
+			state = true
+		}
+		if c.Name == "oidc_nonce" && c.Value != "" {
+			nonce = true
+		}
+	}
+	if !state || !nonce {
+		t.Error("login must set oidc_state and oidc_nonce cookies")
 	}
 }
 

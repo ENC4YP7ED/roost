@@ -66,12 +66,23 @@ func TestWebAuthnStoreCRUD(t *testing.T) {
 
 func TestWebAuthnHTTPSurface(t *testing.T) {
 	h := newHarness(t)
-	h.mkUser("owner", "owner@example.com", "ownerpass1", false)
+	u := h.mkUser("owner", "owner@example.com", "ownerpass1", false)
 	cookie := h.login("owner", "ownerpass1")
 
 	// Listing starts empty.
 	if res := h.do("GET", "/api/client/account/passkeys", nil, withCookie(cookie)); res.Code != http.StatusOK {
 		t.Fatalf("list = %d", res.Code)
+	}
+
+	// Seed a stored credential so the list serialiser and the webauthn.User
+	// adapter (credential exclusion list) both run against real data.
+	h.st.CreateWebAuthnCredential(&store.WebAuthnCredential{
+		UserID: u.ID, Name: "Existing", CredentialID: []byte("seed-cred"),
+		PublicKey: []byte("pub"), Attestation: "none", Transports: `["internal"]`, BackupState: true,
+	})
+	listed := h.do("GET", "/api/client/account/passkeys", nil, withCookie(cookie))
+	if rows := listed.json()["data"].([]any); len(rows) != 1 {
+		t.Fatalf("expected one passkey listed, got %d", len(rows))
 	}
 
 	// Registration begin issues a challenge + credential-creation options.
