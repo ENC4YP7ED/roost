@@ -172,6 +172,8 @@ function materialize(parent: DocumentFragment, child: Child, collect: ChildNode[
 
 function isChild(v: unknown): v is Child {
   return (
+    v == null ||
+    v === false ||
     typeof v === "string" ||
     typeof v === "number" ||
     v instanceof Node ||
