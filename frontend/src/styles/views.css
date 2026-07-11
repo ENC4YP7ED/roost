@@ -413,3 +413,11 @@ button.rst-breadcrumb__item:hover { background: var(--gray-100); color: var(--te
 .rst-connect__or { display: flex; align-items: center; text-align: center; color: var(--text-faint); font-size: var(--fs-xs); }
 .rst-connect__or::before, .rst-connect__or::after { content: ""; flex: 1; height: 1px; background: var(--border); }
 .rst-connect__or span { padding: 0 var(--sp-3); text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* SSO failure banner on the sign-in card. */
+.rst-connect__error {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: var(--sp-3); border-radius: var(--r-md); font-size: var(--fs-sm);
+  background: var(--danger-dim); color: var(--danger); border: 1px solid var(--danger);
+}
+.rst-connect__error .fa-icon { flex: none; }

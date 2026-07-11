@@ -215,6 +215,9 @@ export const passkeyLogin = {
     http.post<{ data: { complete: boolean; user?: any } }>("/auth/passkey/login/finish", { session, response }),
 };
 
+// ---- single sign-on (OIDC) public status ----
+export const ssoStatus = () => http.get<{ enabled: boolean; label: string }>("/api/sso");
+
 // ---- application (admin) area ----
 
 export const admin = {
@@ -312,6 +315,11 @@ export const admin = {
   captcha: {
     list: () => http.get<{ data: Array<{ id: number; provider: string; mode: string; site_key: string; secret?: string }> }>("/api/application/captcha"),
     save: (layers: Array<{ provider: string; mode: string; site_key: string; secret: string }>) => http.put("/api/application/captcha", layers),
+  },
+
+  sso: {
+    get: () => http.get<Record<string, unknown>>("/api/application/sso"),
+    save: (body: unknown) => http.put("/api/application/sso", body),
   },
 
   billing: {

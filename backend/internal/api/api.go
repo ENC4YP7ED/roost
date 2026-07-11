@@ -262,6 +262,7 @@ func (a *API) Mux() *http.ServeMux {
 	a.routesBilling(mux)
 	a.routesStorefront(mux)
 	a.routesWebAuthn(mux)
+	a.routesOIDC(mux)
 	return mux
 }
 

@@ -2,7 +2,7 @@ import { el, icon } from "../core/dom.ts";
 import { Button } from "../components/Button.ts";
 import { TextInput } from "../components/TextInput.ts";
 import { notify } from "../components/Toast.ts";
-import { auth, client, passkeyLogin } from "../api/client.ts";
+import { auth, client, passkeyLogin, ssoStatus } from "../api/client.ts";
 import { store } from "../state/store.ts";
 import { passkeysSupported, getPasskey } from "../util/webauthn.ts";
 import { fetchCaptchaLayers, CaptchaGate, type CaptchaLayer, type CaptchaStack } from "./captcha.ts";
@@ -24,6 +24,23 @@ export function LoginView(onLogin: () => void, options: LoginOptions = {}): HTML
   let captchaLayers: CaptchaLayer[] = [];
   let captchaTokens: Record<string, string> | undefined;
   let gateStack: CaptchaStack | null = null;
+
+  // Single sign-on button is injected once we know it's configured.
+  let sso: { enabled: boolean; label: string } = { enabled: false, label: "" };
+  const ssoSlot = el("div");
+  ssoStatus().then((s) => {
+    sso = s;
+    renderSsoSlot();
+  }).catch(() => {});
+
+  function renderSsoSlot() {
+    ssoSlot.replaceChildren();
+    if (!sso.enabled) return;
+    ssoSlot.appendChild(el("div.col", { style: { gap: "var(--sp-3)" } },
+      el("div.rst-connect__or", el("span", "or")),
+      Button({ label: sso.label || "Single sign-on", variant: "default", icon: "id-card", block: true, onClick: () => { window.location.href = "/auth/oidc/login"; } }),
+    ));
+  }
 
   function swapCard(next: HTMLElement) {
     shell.replaceChild(next, card);
@@ -95,12 +112,16 @@ export function LoginView(onLogin: () => void, options: LoginOptions = {}): HTML
       }
     }
 
+    renderSsoSlot();
+    const ssoError = ssoErrorFromURL();
     const next = el("div.rst-connect__card",
       brand(),
+      ssoError ? el("div.rst-connect__error", icon("triangle-exclamation"), el("span", {}, ssoError)) : null,
       el("div.rst-connect__form", user.el, pass.el, btn),
       passkeysSupported()
         ? el("div.col", { style: { gap: "var(--sp-3)" } }, el("div.rst-connect__or", el("span", "or")), passkeyBtn)
         : null,
+      ssoSlot,
       el("button.rst-connect__link", { onclick: renderForgot }, "Forgot your password?"),
       el("button.rst-connect__link", { onclick: renderRegister }, "Create an account"),
       options.onBack ? el("button.rst-connect__link", { onclick: options.onBack }, "← Back to home") : null,
@@ -200,6 +221,18 @@ export function LoginView(onLogin: () => void, options: LoginOptions = {}): HTML
       icon("lock"),
       el("span", {}, "Session-cookie auth · rate-limited · one Go binary behind this page"),
     );
+  }
+
+  // The OIDC callback bounces back to "/?sso_error=…" on failure; surface it
+  // and scrub it from the URL so a refresh doesn't keep showing it.
+  function ssoErrorFromURL(): string | null {
+    const params = new URLSearchParams(window.location.search);
+    const err = params.get("sso_error");
+    if (!err) return null;
+    params.delete("sso_error");
+    const qs = params.toString();
+    window.history.replaceState({}, "", window.location.pathname + (qs ? `?${qs}` : "") + window.location.hash);
+    return err;
   }
 
   function renderRegister() {

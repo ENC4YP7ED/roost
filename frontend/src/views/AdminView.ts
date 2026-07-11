@@ -274,7 +274,60 @@ function AdminSecurity(): HTMLElement {
     layers = (res.data ?? []).map((l) => ({ provider: l.provider, mode: l.mode || "visible", site_key: l.site_key, secret: l.secret ?? "" }));
     render();
   });
-  return page("Security", { icon: "shield-halved" }, TLSCard(), body);
+  return page("Security", { icon: "shield-halved" }, TLSCard(), SSOCard(), body);
+}
+
+// BundID preset: German federal identity system. The customer supplies the
+// client id/secret from their BundID service-provider registration.
+const BUNDID_ISSUER = "https://id.bund.de/oidc";
+
+function SSOCard(): HTMLElement {
+  const card = el("div.rst-card", LoadingState());
+
+  function render(cfg: Record<string, any>) {
+    let enabled = Boolean(cfg.enabled);
+    let linkByEmail = cfg.link_by_email !== false;
+    const issuer = TextInput({ label: "Issuer URL", value: cfg.issuer ?? "", hint: "OpenID Connect issuer; discovery is fetched from /.well-known/openid-configuration." });
+    const clientId = TextInput({ label: "Client ID", value: cfg.client_id ?? "" });
+    const clientSecret = TextInput({ label: "Client secret", type: "password", placeholder: cfg.secret_present ? "•••••• (stored — leave blank to keep)" : "" });
+    const scopes = TextInput({ label: "Scopes", value: cfg.scopes ?? "openid email profile" });
+    const label = TextInput({ label: "Button label", value: cfg.label ?? "Sign in with SSO" });
+
+    card.replaceChildren(
+      el("div.rst-card__title", icon("id-card"), "Single sign-on (OpenID Connect)"),
+      el("p.faint", "Let customers register and sign in with an external identity provider. Add this redirect URI at the provider:"),
+      el("p.mono.faint", { style: { wordBreak: "break-all" } }, String(cfg.redirect_uri ?? "")),
+      el("div.row", { style: { margin: "var(--sp-3) 0" } },
+        Button({ label: "Use BundID preset", icon: "landmark", size: "sm", onClick: () => {
+          issuer.value = BUNDID_ISSUER;
+          scopes.value = "openid bpk2 email profile";
+          label.value = "Sign in with BundID";
+        } }),
+      ),
+      el("div.rst-form__row", issuer.el, clientId.el),
+      el("div.rst-form__row", clientSecret.el, scopes.el),
+      el("div.rst-form__row", label.el),
+      Switch({ checked: enabled, label: "Enable single sign-on", onChange: (v) => { enabled = v; } }),
+      Switch({ checked: linkByEmail, label: "Link to an existing account when the verified email matches", onChange: (v) => { linkByEmail = v; } }),
+      el("div.row", { style: { marginTop: "var(--sp-4)" } }, Button({
+        label: "Save SSO settings", variant: "primary", icon: "check",
+        onClick: async () => {
+          try {
+            await admin.sso.save({
+              enabled, issuer: issuer.value, client_id: clientId.value,
+              client_secret: clientSecret.value, scopes: scopes.value, label: label.value,
+              link_by_email: linkByEmail,
+            });
+            notify.success("SSO settings saved");
+            admin.sso.get().then(render);
+          } catch (err) { notify.error(String((err as Error).message)); }
+        },
+      })),
+    );
+  }
+
+  admin.sso.get().then(render).catch((err) => card.replaceChildren(el("p", { style: { color: "var(--danger)" } }, String(err.message))));
+  return card;
 }
 
 // ---------------------------------------------------------------- webhooks
