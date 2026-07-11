@@ -155,9 +155,14 @@ make check          # go vet + tsc --noEmit
   and drives Chromium: login, admin area, the new-server flow, the database
   viewer gate, and the security surface.
 
-Coverage (non-vendored code, `-coverpkg` combined): **76%**. Per package:
-`tlsmgr` 96%, `wings` 93%, `auth` 91%, `store` 88%, `billing` 85%, `seed` 76%,
-`api` 71%. The uncovered remainder is dominated by database-error branches
-(unreachable without fault injection) and the vendored database viewer, which
-needs a live MySQL. Every request handler, store query, VAT/invoice path and
-payment-webhook branch is exercised.
+Coverage (`-coverpkg` combined, **whole codebase including the vendored
+viewer**): **80%**. Per package: `tlsmgr` 96%, `store` 95%, `wings` 93%,
+`auth`/`session` 91%, `billing` 85%, `seed` 76%, `api` 75%, `dbviewer/db` 75%,
+`dbviewer/api` 73%. Every request handler, store query, VAT/invoice path,
+payment-webhook branch and database-error branch is exercised; the database
+viewer is covered against a real MariaDB. The residual is a handful of
+genuinely unreachable branches (e.g. `panic`-on-crypto-failure guards).
+
+The database-viewer suite runs against a live MySQL/MariaDB. Locally,
+`make test-dbviewer` brings up a container, runs the tests and tears it down;
+CI provides a MariaDB service. Without one, those tests skip cleanly.

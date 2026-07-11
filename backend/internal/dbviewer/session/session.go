@@ -107,17 +107,23 @@ func (s *Store) reap() {
 		case <-s.stopChan:
 			return
 		case <-ticker.C:
-			cutoff := time.Now().Add(-s.ttl)
-			s.mu.Lock()
-			for token, sess := range s.items {
-				if sess.lastSeen.Before(cutoff) {
-					if sess.DB != nil {
-						_ = sess.DB.Close()
-					}
-					delete(s.items, token)
-				}
+			s.reapOnce()
+		}
+	}
+}
+
+// reapOnce evicts every session idle for longer than the TTL. It is the body
+// of the reap ticker, factored out so it can be exercised deterministically.
+func (s *Store) reapOnce() {
+	cutoff := time.Now().Add(-s.ttl)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for token, sess := range s.items {
+		if sess.lastSeen.Before(cutoff) {
+			if sess.DB != nil {
+				_ = sess.DB.Close()
 			}
-			s.mu.Unlock()
+			delete(s.items, token)
 		}
 	}
 }

@@ -9,6 +9,20 @@ jobs:
   backend:
     name: Go tests
     runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11
+        env:
+          MARIADB_ROOT_PASSWORD: testpw
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=10
+    env:
+      # Enables the database-viewer integration tests (against the service above).
+      ROOST_TEST_MYSQL: 127.0.0.1:3306
+      ROOST_TEST_MYSQL_PW: testpw
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -19,8 +33,11 @@ jobs:
         run: cd backend && go vet ./...
       - name: Test (race detector)
         run: cd backend && go test ./... -race -count=1
-      - name: Coverage
-        run: cd backend && go test ./internal/... -coverprofile=coverage.out && go tool cover -func=coverage.out | tail -1
+      - name: Coverage (whole codebase, incl. database viewer)
+        run: |
+          cd backend
+          go test ./internal/... -coverpkg=./internal/... -coverprofile=coverage.out
+          go tool cover -func=coverage.out | tail -1
 
   frontend:
     name: Frontend tests

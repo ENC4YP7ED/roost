@@ -1,6 +1,6 @@
 VERSION ?= $(shell date +%Y.%m.%d)
 
-.PHONY: all frontend dbviewer backend check test test-go test-frontend test-e2e clean dev release
+.PHONY: all frontend dbviewer backend check test test-go test-dbviewer test-frontend test-e2e clean dev release
 
 all: frontend backend
 
@@ -23,10 +23,17 @@ check:
 	cd dbviewer-frontend && npx tsc --noEmit
 
 ## Run every test suite: Go (race), frontend units, browser end-to-end.
-test: test-go test-frontend test-e2e
+test: test-go test-dbviewer test-frontend test-e2e
 
 test-go:
 	cd backend && go test ./... -race -count=1
+
+## Database-viewer integration tests: bring up MariaDB, run, tear down.
+test-dbviewer:
+	docker rm -f roost-mariadb-test 2>/dev/null || true
+	docker run -d --name roost-mariadb-test -e MARIADB_ROOT_PASSWORD=testpw -p 13306:3306 mariadb:11
+	@echo "waiting for MariaDB..."; 	for i in $$(seq 1 60); do docker exec roost-mariadb-test mariadb -uroot -ptestpw -e "SELECT 1" >/dev/null 2>&1 && break; sleep 1; done
+	cd backend && ROOST_TEST_MYSQL=127.0.0.1:13306 ROOST_TEST_MYSQL_PW=testpw go test ./internal/dbviewer/... -cover; 	status=$$?; docker rm -f roost-mariadb-test >/dev/null 2>&1; exit $$status
 
 test-frontend:
 	cd frontend && npm run test
