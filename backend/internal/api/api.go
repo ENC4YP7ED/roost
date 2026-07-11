@@ -260,6 +260,7 @@ func (a *API) Mux() *http.ServeMux {
 	a.routesCaptcha(mux)
 	a.routesTLS(mux)
 	a.routesBilling(mux)
+	a.routesStorefront(mux)
 	return mux
 }
 

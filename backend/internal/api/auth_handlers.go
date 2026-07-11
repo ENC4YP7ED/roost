@@ -14,6 +14,7 @@ import (
 const sessionTTL = 12 * time.Hour
 
 func (a *API) routesAuth(mux *http.ServeMux) {
+	mux.HandleFunc("POST /auth/register", throttle(loginLimiter, a.handleRegister))
 	mux.HandleFunc("POST /auth/login", throttle(loginLimiter, a.handleLogin))
 	mux.HandleFunc("POST /auth/login/checkpoint", throttle(loginLimiter, a.handleLoginCheckpoint))
 	mux.HandleFunc("POST /auth/logout", a.handleLogout)
@@ -91,6 +92,54 @@ func (a *API) handleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	a.completeLogin(w, r, u)
+}
+
+// handleRegister creates a customer account when self-registration is enabled
+// by an admin. New accounts are always non-admin.
+func (a *API) handleRegister(w http.ResponseWriter, r *http.Request) {
+	if a.Store.Setting("registration:enabled", "") != "1" {
+		writeError(w, http.StatusForbidden, "Self-registration is disabled on this panel.")
+		return
+	}
+	var body struct {
+		Email     string `json:"email"`
+		Username  string `json:"username"`
+		FirstName string `json:"first_name"`
+		LastName  string `json:"last_name"`
+		Password  string `json:"password"`
+	}
+	if err := decode(r, &body); err != nil {
+		writeError(w, http.StatusUnprocessableEntity, "Invalid request body.")
+		return
+	}
+	body.Email = strings.TrimSpace(strings.ToLower(body.Email))
+	body.Username = strings.TrimSpace(body.Username)
+	if !strings.Contains(body.Email, "@") || body.Username == "" {
+		writeError(w, http.StatusUnprocessableEntity, "A valid email and a username are required.")
+		return
+	}
+	if len(body.Password) < 8 {
+		writeError(w, http.StatusUnprocessableEntity, "Password must be at least 8 characters long.")
+		return
+	}
+	hash, err := auth.HashPassword(body.Password)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "Failed to hash password.")
+		return
+	}
+	u := &store.User{
+		UUID: auth.UUID(), Username: body.Username, Email: body.Email,
+		NameFirst: body.FirstName, NameLast: body.LastName, Password: hash, Language: "en",
+	}
+	if err := a.Store.CreateUser(u); err != nil {
+		writeError(w, http.StatusConflict, "That email or username is already registered.")
+		return
+	}
+	a.issueSession(w, r, u)
+	a.Store.LogActivity(&store.ActivityLog{Event: "auth:register", IP: clientIP(r), ActorID: &u.ID, Properties: "{}"})
+	writeJSON(w, http.StatusOK, map[string]any{
+		"data": map[string]any{"complete": true, "intended": "/", "user": a.accountAttributes(u)},
+	})
 }
 
 func (a *API) handleLoginCheckpoint(w http.ResponseWriter, r *http.Request) {

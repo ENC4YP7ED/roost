@@ -52,6 +52,20 @@ export function unwrap<T>(list: { data?: Array<{ attributes: unknown }> }): T[] 
   return (list.data ?? []).map((d) => d.attributes as T);
 }
 
+// ---- public storefront (no auth) ----
+
+export interface Storefront {
+  app_name: string;
+  enabled: boolean;
+  currency: string;
+  registration_enabled: boolean;
+  providers: string[];
+  packages: any[];
+  games: any[];
+}
+
+export const storefront = () => http.get<Storefront>("/api/storefront");
+
 // ---- auth ----
 
 export const auth = {
@@ -63,6 +77,8 @@ export const auth = {
       recovery
         ? { confirmation_token, recovery_token: code }
         : { confirmation_token, authentication_code: code }),
+  register: (body: { email: string; username: string; first_name: string; last_name: string; password: string }) =>
+    http.post<{ data: { complete: boolean; user?: any } }>("/auth/register", body),
   logout: () => http.post("/auth/logout"),
   forgot: (email: string) => http.post("/auth/password", { email }),
   reset: (email: string, token: string, password: string) =>
@@ -160,8 +176,8 @@ export const client = {
     products: () => http.get<ApiList>("/api/client/billing/products"),
     profile: () => http.get<ApiItem>("/api/client/billing/profile"),
     saveProfile: (body: unknown) => http.put<ApiItem>("/api/client/billing/profile", body),
-    checkout: (product_id: number, provider: string) =>
-      http.post<{ data: { redirect_url: string; order: string } }>("/api/client/billing/checkout", { product_id, provider }),
+    checkout: (product_id: number, provider: string, config?: { memory: number; egg_id: number }) =>
+      http.post<{ data: { redirect_url: string; order: string } }>("/api/client/billing/checkout", { product_id, provider, config }),
     orders: () => http.get<ApiList>("/api/client/billing/orders"),
     subscriptions: () => http.get<ApiList>("/api/client/billing/subscriptions"),
     invoices: () => http.get<ApiList>("/api/client/billing/invoices"),

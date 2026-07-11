@@ -103,13 +103,16 @@ function AdminSettings(): HTMLElement {
   admin.settings().then((s) => {
     const name = TextInput({ label: "Panel name", value: s["app:name"] ?? "Roost" });
     const url = TextInput({ label: "Panel URL", value: s["app:url"] ?? "", hint: "Public URL wings uses to reach this panel (also embedded in signed tokens)." });
+    let registration = Boolean(s["registration:enabled"]);
     body.replaceChildren(el("div.rst-card",
       el("div.rst-card__title", icon("sliders"), "Branding & connectivity"),
       el("div.rst-form__row", name.el, url.el),
-      el("div.row", Button({
+      el("div.rst-card__title", { style: { marginTop: "var(--sp-5)" } }, icon("user-plus"), "Registration"),
+      Switch({ checked: registration, label: "Allow public self-registration (a “Create account” option on the sign-in page)", onChange: (v) => { registration = v; } }),
+      el("div.row", { style: { marginTop: "var(--sp-4)" } }, Button({
         label: "Save settings", variant: "primary", icon: "check",
         onClick: async () => {
-          await admin.saveSettings({ "app:name": name.value, "app:url": url.value });
+          await admin.saveSettings({ "app:name": name.value, "app:url": url.value, "registration:enabled": registration ? "1" : "0" });
           store.appName.value = name.value;
           notify.success("Settings saved");
         },

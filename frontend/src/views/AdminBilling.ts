@@ -110,11 +110,14 @@ export function AdminProducts(): HTMLElement {
   const body = el("div", LoadingState());
   let eggs: Array<{ value: string; label: string }> = [];
   let nodes: Array<{ value: string; label: string }> = [];
+  let nestOpts: Array<{ value: string; label: string }> = [];
 
   async function loadRefs() {
     if (eggs.length) return;
     const nests = unwrap<any>(await admin.nests.list());
+    nestOpts = [{ value: "", label: "— (none)" }];
     for (const nest of nests) {
+      nestOpts.push({ value: String(nest.id), label: nest.name });
       const list = unwrap<any>(await admin.nests.eggs(nest.id));
       for (const e of list) eggs.push({ value: String(e.id), label: `${nest.name} / ${e.name}` });
     }
@@ -169,6 +172,18 @@ export function AdminProducts(): HTMLElement {
     const description = TextArea({ placeholder: "Shown on the plan card", rows: 2, value: existing?.description ?? "" });
     let active = existing?.active ?? true;
 
+    // Configurable plan: customer picks RAM (priced base + per-GB) and a game
+    // from the chosen nest. The fixed Memory/Egg fields above become defaults.
+    let configurable = existing?.configurable ?? false;
+    const pricePerGB = TextInput({ label: "Price per GB (major units)", value: existing ? String((existing.price_per_gb_cents ?? 0) / 100) : "0", type: "number", hint: "Added on top of the base price, per GiB of RAM." });
+    const minMemory = TextInput({ label: "Min memory (MiB)", value: String(existing?.min_memory ?? 1024), type: "number" });
+    const maxMemory = TextInput({ label: "Max memory (MiB)", value: String(existing?.max_memory ?? 16384), type: "number" });
+    const nest = Select({ options: nestOpts, value: existing?.nest_id != null ? String(existing.nest_id) : "", searchable: true });
+    const configFields = el("div.rst-form", { style: { display: configurable ? "" : "none", marginTop: "var(--sp-3)" } },
+      el("div.rst-form__row", pricePerGB.el, minMemory.el, maxMemory.el),
+      Field("Game category (nest customers can pick from)", nest.el),
+    );
+
     openModal({
       title: existing ? `Edit ${existing.name}` : "New plan", icon: "box", width: 700,
       body: el("div.rst-form",
@@ -178,6 +193,8 @@ export function AdminProducts(): HTMLElement {
         el("div.rst-form__row", databases.el, allocations.el, backups.el),
         Field("Description", description),
         Switch({ checked: active, label: "Active (visible in the shop)", onChange: (v) => { active = v; } }),
+        Switch({ checked: configurable, label: "Configurable (customer chooses RAM + game)", onChange: (v) => { configurable = v; configFields.style.display = v ? "" : "none"; } }),
+        configFields,
       ),
       actions: [
         { label: "Cancel" },
@@ -190,6 +207,10 @@ export function AdminProducts(): HTMLElement {
             memory: Number(memory.value), disk: Number(disk.value), cpu: Number(cpu.value),
             databases: Number(databases.value), allocations: Number(allocations.value), backups: Number(backups.value),
             active,
+            configurable,
+            price_per_gb_cents: Math.round(parseFloat(pricePerGB.value || "0") * 100),
+            min_memory: Number(minMemory.value), max_memory: Number(maxMemory.value),
+            nest_id: nest.value ? Number(nest.value) : null,
           };
           try {
             if (existing) await admin.billing.updateProduct(existing.id, payload);

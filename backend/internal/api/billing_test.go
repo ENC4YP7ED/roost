@@ -525,3 +525,76 @@ func TestBillingUnauthenticated(t *testing.T) {
 		}
 	}
 }
+
+func TestStorefrontPublicAndConfigurableCheckout(t *testing.T) {
+	h := newHarness(t)
+	f := h.seedFixture()
+
+	// The storefront is public — no session — but empty while billing is off.
+	sf := h.do("GET", "/api/storefront", nil)
+	if sf.Code != http.StatusOK {
+		t.Fatalf("storefront = %d", sf.Code)
+	}
+	if sf.json()["enabled"] != false {
+		t.Error("storefront should report billing disabled")
+	}
+
+	h.enableBilling()
+	// A configurable plan: base €2 + €1.50 per GiB, 1–8 GiB, games from the nest.
+	prod := &store.Product{
+		Name: "Build-a-Server", PriceCents: 200, Currency: "EUR", BillingInterval: "month",
+		EggID: f.egg.ID, Configurable: true, PricePerGBCents: 150, MinMemory: 1024, MaxMemory: 8192,
+		NestID: &f.server.NestID, IO: 500, Allocations: 1, Disk: 10240, Active: true,
+	}
+	if err := h.st.CreateProduct(prod); err != nil {
+		t.Fatal(err)
+	}
+
+	sf = h.do("GET", "/api/storefront", nil)
+	body := sf.json()
+	if body["enabled"] != true {
+		t.Fatal("storefront should be enabled")
+	}
+	packages := body["packages"].([]any)
+	if len(packages) != 1 {
+		t.Fatalf("storefront lists %d packages, want 1", len(packages))
+	}
+	pkg := packages[0].(map[string]any)
+	if pkg["configurable"] != true || pkg["price_per_gb"] != "€1.50" {
+		t.Errorf("configurable package payload wrong: %v", pkg)
+	}
+	if len(pkg["game_options"].([]any)) != 1 {
+		t.Error("configurable package should expose its game options")
+	}
+	// Games showcase is present.
+	if len(body["games"].([]any)) == 0 {
+		t.Error("storefront exposes no games")
+	}
+
+	// Configured checkout: 4 GiB → net = 200 + 150*4 = 800 cents.
+	cookie := h.login("owner", "ownerpass1")
+	h.do("POST", "/api/client/billing/checkout", map[string]any{
+		"product_id": prod.ID, "provider": "stripe",
+		"config": map[string]any{"memory": 4096, "egg_id": f.egg.ID},
+	}, withCookie(cookie))
+	orders, _ := h.st.OrdersForUser(f.owner.ID)
+	if len(orders) != 1 {
+		t.Fatalf("orders = %d", len(orders))
+	}
+	o := orders[0]
+	if o.NetCents != 800 {
+		t.Errorf("configured net = %d, want 800 (200 + 150*4)", o.NetCents)
+	}
+	if o.ConfigMemory != 4096 || o.ConfigEgg != f.egg.ID {
+		t.Errorf("order did not capture the config: mem=%d egg=%d", o.ConfigMemory, o.ConfigEgg)
+	}
+
+	// Out-of-range memory is rejected.
+	bad := h.do("POST", "/api/client/billing/checkout", map[string]any{
+		"product_id": prod.ID, "provider": "stripe",
+		"config": map[string]any{"memory": 99999, "egg_id": f.egg.ID},
+	}, withCookie(cookie))
+	if bad.Code != http.StatusUnprocessableEntity {
+		t.Errorf("out-of-range memory = %d, want 422", bad.Code)
+	}
+}

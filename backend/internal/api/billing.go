@@ -100,10 +100,34 @@ func trProduct(p *store.Product) map[string]any {
 		"feature_limits": map[string]any{
 			"databases": p.Databases, "allocations": p.Allocations, "backups": p.Backups,
 		},
-		"active":     p.Active,
-		"sort":       p.Sort,
-		"created_at": p.CreatedAt,
+		"active":             p.Active,
+		"sort":               p.Sort,
+		"configurable":       p.Configurable,
+		"price_per_gb_cents": p.PricePerGBCents,
+		"min_memory":         p.MinMemory,
+		"max_memory":         p.MaxMemory,
+		"nest_id":            p.NestID,
+		"created_at":         p.CreatedAt,
 	}
+}
+
+// trProductConfigurable is trProduct enriched with the live per-GB price and,
+// for configurable plans, the set of games the customer can pick — everything
+// the shop configurator needs to build a quote before checkout.
+func (a *API) trProductConfigurable(p *store.Product) map[string]any {
+	out := trProduct(p)
+	if p.Configurable {
+		out["price_per_gb"] = billing.FormatMoney(p.PricePerGBCents, p.Currency)
+		if p.NestID != nil {
+			eggs, _ := a.Store.EggsForNest(*p.NestID)
+			opts := make([]map[string]any, 0, len(eggs))
+			for _, e := range eggs {
+				opts = append(opts, map[string]any{"id": e.ID, "name": e.Name})
+			}
+			out["game_options"] = opts
+		}
+	}
+	return out
 }
 
 func trOrder(o *store.Order) map[string]any {
@@ -175,7 +199,7 @@ func (a *API) routesBilling(mux *http.ServeMux) {
 		products, _ := a.Store.Products(true)
 		rows := make([]map[string]any, 0, len(products))
 		for _, p := range products {
-			rows = append(rows, trProduct(p))
+			rows = append(rows, a.trProductConfigurable(p))
 		}
 		writeList(w, r, "product", rows)
 	}))
@@ -397,6 +421,11 @@ func (a *API) upsertProduct(w http.ResponseWriter, r *http.Request, p *store.Pro
 		Backups         int64  `json:"backups"`
 		Active          *bool  `json:"active"`
 		Sort            int64  `json:"sort"`
+		Configurable    *bool  `json:"configurable"`
+		PricePerGBCents int64  `json:"price_per_gb_cents"`
+		MinMemory       int64  `json:"min_memory"`
+		MaxMemory       int64  `json:"max_memory"`
+		NestID          *int64 `json:"nest_id"`
 	}
 	if err := decode(r, &body); err != nil {
 		writeError(w, http.StatusUnprocessableEntity, "Invalid request body.")
@@ -451,6 +480,17 @@ func (a *API) upsertProduct(w http.ResponseWriter, r *http.Request, p *store.Pro
 	if body.Active != nil {
 		p.Active = *body.Active
 	}
+	if body.Configurable != nil {
+		p.Configurable = *body.Configurable
+	}
+	p.PricePerGBCents = body.PricePerGBCents
+	if body.MinMemory > 0 {
+		p.MinMemory = body.MinMemory
+	}
+	if body.MaxMemory > 0 {
+		p.MaxMemory = body.MaxMemory
+	}
+	p.NestID = body.NestID
 
 	var err error
 	if isNew {
@@ -477,6 +517,10 @@ func (a *API) handleCheckout(w http.ResponseWriter, r *http.Request) {
 	var body struct {
 		ProductID int64  `json:"product_id"`
 		Provider  string `json:"provider"`
+		Config    *struct {
+			Memory int64 `json:"memory"`
+			EggID  int64 `json:"egg_id"`
+		} `json:"config"`
 	}
 	if err := decode(r, &body); err != nil {
 		writeError(w, http.StatusUnprocessableEntity, "Invalid request body.")
@@ -493,18 +537,31 @@ func (a *API) handleCheckout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Resolve the price and the server spec, applying the customer's choices
+	// for a configurable plan.
+	var chosenMemory, chosenEgg int64
+	if body.Config != nil {
+		chosenMemory, chosenEgg = body.Config.Memory, body.Config.EggID
+	}
+	netCents, provMemory, provEgg, cErr := a.configuredPrice(product, chosenMemory, chosenEgg)
+	if cErr != nil {
+		writeError(w, http.StatusUnprocessableEntity, cErr.Error())
+		return
+	}
+
 	// VAT from the customer's billing profile (reverse charge for EU B2B).
 	profile, _ := a.Store.BillingProfile(u.ID)
 	buyerCountry, buyerVAT := "", ""
 	if profile != nil {
 		buyerCountry, buyerVAT = profile.Country, profile.VATID
 	}
-	vat := billing.ComputeVAT(product.PriceCents, cfg.VATRate, cfg.SellerCountry, buyerCountry, buyerVAT)
+	vat := billing.ComputeVAT(netCents, cfg.VATRate, cfg.SellerCountry, buyerCountry, buyerVAT)
 
 	order := &store.Order{
 		UUID: auth.UUID(), UserID: u.ID, ProductID: product.ID, Provider: prov.Name(),
 		Status: "pending", NetCents: vat.NetCents, VATCents: vat.VATCents, GrossCents: vat.GrossCents,
 		VATRate: vat.RateBP, ReverseCharge: vat.ReverseCharge, Currency: product.Currency,
+		ConfigMemory: provMemory, ConfigEgg: provEgg,
 	}
 	if err := a.Store.CreateOrder(order); err != nil {
 		writeError(w, http.StatusInternalServerError, err.Error())
@@ -618,14 +675,22 @@ func (a *API) fulfilOrder(providerName string, ev billing.WebhookEvent) {
 	if product.NodeID != nil {
 		nodeID = *product.NodeID
 	}
+	// A configurable plan carries the customer's chosen RAM/game on the order.
+	memory, eggID := product.Memory, product.EggID
+	if order.ConfigMemory > 0 {
+		memory = order.ConfigMemory
+	}
+	if order.ConfigEgg > 0 {
+		eggID = order.ConfigEgg
+	}
 	srv, err := a.provisionServer(ProvisionSpec{
 		Name:        product.Name,
 		OwnerID:     order.UserID,
-		EggID:       product.EggID,
+		EggID:       eggID,
 		NodeID:      nodeID,
 		DockerImage: product.DockerImage,
 		OOMDisabled: true,
-		Memory:      product.Memory, Swap: product.Swap, Disk: product.Disk,
+		Memory:      memory, Swap: product.Swap, Disk: product.Disk,
 		IO: product.IO, CPU: product.CPU,
 		Databases: product.Databases, Allocations: product.Allocations, Backups: product.Backups,
 	})

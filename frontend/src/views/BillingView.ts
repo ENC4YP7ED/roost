@@ -36,30 +36,88 @@ function ShopTab(): HTMLElement {
   }
 
   function productCard(p: any): HTMLElement {
-    const buy = async (provider: string) => {
+    const buy = async (provider: string, config?: { memory: number; egg_id: number }) => {
       try {
-        const res = await client.billing.checkout(p.id, provider);
+        const res = await client.billing.checkout(p.id, provider, config);
         window.location.href = res.data.redirect_url;
       } catch (err) { notify.error(String((err as Error).message)); }
     };
-    return el("div.rst-plan",
+    return el("div.rst-plan", { class: p.configurable ? "is-configurable" : "" },
+      p.configurable ? el("div.rst-plan__badge", "Configurable") : null,
       el("div.rst-plan__name", p.name),
       el("div.rst-plan__price",
+        p.configurable ? el("span.faint", "from ") : null,
         el("span.rst-plan__amount", p.price),
-        el("span.rst-plan__interval.faint", ` ${p.interval_label}`),
+        p.configurable
+          ? el("span.rst-plan__interval.faint", ` + ${p.price_per_gb}/GB`)
+          : el("span.rst-plan__interval.faint", ` ${p.interval_label}`),
       ),
       p.description ? el("p.faint", p.description) : null,
       el("dl.rst-kv",
-        el("dt", "Memory"), el("dd", `${p.limits.memory} MiB`),
+        el("dt", "Memory"), el("dd", p.configurable ? `${(p.min_memory / 1024) | 0}–${(p.max_memory / 1024) | 0} GB (you choose)` : `${p.limits.memory} MiB`),
         el("dt", "Disk"), el("dd", `${p.limits.disk} MiB`),
         el("dt", "CPU"), el("dd", p.limits.cpu ? `${p.limits.cpu}%` : "shared"),
         el("dt", "Databases"), el("dd", String(p.feature_limits.databases)),
         el("dt", "Backups"), el("dd", String(p.feature_limits.backups)),
       ),
-      el("div.rst-plan__buy", { onclick: () => providerChoice(p, buy) },
-        Button({ label: "Order now", icon: "credit-card", variant: "primary", block: true }),
-      ),
+      p.configurable
+        ? el("div.rst-plan__buy", { onclick: () => configureModal(p, buy) },
+            Button({ label: "Configure & order", icon: "sliders", variant: "primary", block: true }),
+          )
+        : el("div.rst-plan__buy", { onclick: () => providerChoice(p, (prov) => buy(prov)) },
+            Button({ label: "Order now", icon: "credit-card", variant: "primary", block: true }),
+          ),
     );
+  }
+
+  function configureModal(p: any, buy: (provider: string, config: { memory: number; egg_id: number }) => void) {
+    const min = p.min_memory as number, max = p.max_memory as number;
+    const games: { id: number; name: string }[] = p.game_options ?? [];
+    // Snap the initial choice to the plan's minimum, in whole GiB steps.
+    let memory = min;
+    let eggID = games.length ? games[0].id : 0;
+
+    const perGB = (p.price_per_gb_cents as number) / 100;
+    const base = (p.price_cents as number) / 100;
+    const cur = (p.currency as string) || "EUR";
+    const fmt = (n: number) => new Intl.NumberFormat(undefined, { style: "currency", currency: cur }).format(n);
+    const quote = () => base + perGB * Math.ceil(memory / 1024);
+
+    const priceEl = el("div.rst-plan__amount", fmt(quote()));
+    const ramLabel = el("strong", `${(memory / 1024) | 0} GB`);
+    const slider = el("input.rst-range", {
+      type: "range", min: String(min), max: String(max), step: "1024", value: String(memory),
+      oninput: (e: Event) => {
+        memory = Number((e.target as HTMLInputElement).value);
+        ramLabel.textContent = `${(memory / 1024) | 0} GB`;
+        priceEl.textContent = fmt(quote());
+      },
+    }) as HTMLInputElement;
+
+    const gameSel = el("select.rst-select", {
+      onchange: (e: Event) => { eggID = Number((e.target as HTMLSelectElement).value); },
+    }, ...games.map((g) => el("option", { value: String(g.id) }, g.name))) as HTMLSelectElement;
+
+    openModal({
+      title: `Configure — ${p.name}`, icon: "sliders", width: 460,
+      body: el("div.col", { style: { gap: "var(--sp-4)" } },
+        el("div.col", { style: { gap: "var(--sp-2)" } },
+          el("label.rst-field__label", el("span", "Memory"), ramLabel),
+          slider,
+        ),
+        games.length
+          ? el("div.col", { style: { gap: "var(--sp-2)" } }, el("label.rst-field__label", "Game"), gameSel)
+          : null,
+        el("div.rst-plan__price", { style: { marginTop: "var(--sp-2)" } },
+          el("span.faint", "Total "), priceEl, el("span.faint", ` ${p.interval_label}`),
+        ),
+        el("div.col", { style: { gap: "var(--sp-2)", marginTop: "var(--sp-2)" } },
+          Button({ label: "Pay with card (Stripe)", icon: "credit-card", block: true, onClick: () => buy("stripe", { memory, egg_id: eggID }) }),
+          Button({ label: "Pay with Revolut", icon: "building-columns", block: true, onClick: () => buy("revolut", { memory, egg_id: eggID }) }),
+        ),
+      ),
+      actions: [{ label: "Cancel" }],
+    });
   }
 
   function providerChoice(p: any, buy: (provider: string) => void) {

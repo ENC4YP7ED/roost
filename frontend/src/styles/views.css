@@ -315,3 +315,96 @@ button.rst-breadcrumb__item:hover { background: var(--gray-100); color: var(--te
 .rst-plan__amount { font-size: var(--fs-2xl); font-weight: var(--fw-bold); color: var(--text-strong); letter-spacing: -0.02em; }
 .rst-plan .rst-kv { margin: var(--sp-2) 0; }
 .rst-plan__buy { margin-top: auto; }
+
+/* ============================================================================
+ * Public landing page / storefront (ptg-landing)
+ * The logged-out marketing face: hero, games catalogue, hosting packages.
+ * ========================================================================== */
+.rst-connect__row { display: flex; gap: var(--sp-3); }
+.rst-connect__row > * { flex: 1; }
+
+.ptg-landing { min-height: 100vh; background: var(--bg); color: var(--text); }
+.ptg-landing__page { display: flex; flex-direction: column; min-height: 100vh; }
+
+.ptg-landing__nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--sp-4) var(--sp-8); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(12px); z-index: 10;
+}
+.ptg-landing__brand { display: flex; align-items: center; gap: var(--sp-3); font-weight: var(--fw-bold); color: var(--text-strong); font-size: var(--fs-lg); }
+.ptg-landing__logo {
+  width: 30px; height: 30px; display: grid; place-items: center;
+  border-radius: var(--r-md); background: var(--gray-1000); color: var(--gray-0);
+}
+
+.ptg-landing__hero { position: relative; padding: var(--sp-12) var(--sp-8); overflow: hidden; }
+.ptg-landing__hero .ptg-landing__grid {
+  position: absolute; inset: 0;
+  background-image: linear-gradient(var(--border) 1px, transparent 1px),
+                    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 75%);
+  opacity: 0.5; pointer-events: none;
+}
+.ptg-landing__hero-inner { position: relative; max-width: 760px; margin: 0 auto; text-align: center; padding: var(--sp-10) 0; }
+.ptg-landing__title { font-size: clamp(30px, 5vw, 52px); font-weight: var(--fw-bold); letter-spacing: -0.03em; color: var(--text-strong); line-height: 1.05; }
+.ptg-landing__sub { margin-top: var(--sp-5); font-size: var(--fs-lg); color: var(--text-muted); line-height: var(--lh-normal); }
+
+.ptg-landing__games, .ptg-landing__packages { padding: var(--sp-12) var(--sp-8); max-width: 1180px; margin: 0 auto; width: 100%; }
+.ptg-landing__packages { border-top: 1px solid var(--border); }
+.ptg-landing__section-head { text-align: center; margin-bottom: var(--sp-10); }
+.ptg-landing__section-title { font-size: var(--fs-2xl); font-weight: var(--fw-bold); color: var(--text-strong); letter-spacing: -0.02em; }
+.ptg-landing__section-head .faint { margin-top: var(--sp-2); }
+
+.ptg-landing__game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--sp-4); }
+.ptg-landing__game {
+  border: 1px solid var(--border); border-radius: var(--r-lg); padding: var(--sp-5);
+  background: var(--bg-raised); transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.ptg-landing__game:hover { border-color: var(--border-strong); transform: translateY(-2px); }
+.ptg-landing__game-icon {
+  width: 40px; height: 40px; display: grid; place-items: center; margin-bottom: var(--sp-3);
+  border-radius: var(--r-md); background: var(--bg-panel); color: var(--text-strong); font-size: var(--fs-xl);
+}
+.ptg-landing__game-name { font-weight: var(--fw-semibold); color: var(--text-strong); margin-bottom: var(--sp-1); }
+.ptg-landing__game-eggs { font-size: var(--fs-sm); line-height: var(--lh-normal); }
+
+.ptg-landing__plan-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--sp-5); align-items: start; }
+.ptg-landing__plan {
+  position: relative; border: 1px solid var(--border); border-radius: var(--r-xl);
+  padding: var(--sp-6); background: var(--bg-raised); display: flex; flex-direction: column; gap: var(--sp-4);
+}
+.ptg-landing__plan.is-featured { border-color: var(--border-strong); box-shadow: var(--shadow-pop); }
+.ptg-landing__badge {
+  position: absolute; top: -10px; left: var(--sp-6);
+  padding: 2px var(--sp-3); border-radius: var(--r-full); font-size: var(--fs-xs); font-weight: var(--fw-semibold);
+  background: var(--gray-1000); color: var(--gray-0); letter-spacing: 0.02em;
+}
+.ptg-landing__plan-name { font-size: var(--fs-lg); font-weight: var(--fw-bold); color: var(--text-strong); }
+.ptg-landing__plan-price { display: flex; align-items: baseline; gap: 4px; flex-wrap: wrap; }
+.ptg-landing__amount { font-size: var(--fs-2xl); font-weight: var(--fw-bold); color: var(--text-strong); letter-spacing: -0.02em; }
+.ptg-landing__specs { list-style: none; display: flex; flex-direction: column; gap: var(--sp-2); font-size: var(--fs-md); color: var(--text-muted); }
+.ptg-landing__specs .fa-icon { width: 16px; color: var(--text-faint); margin-right: var(--sp-1); }
+
+.ptg-landing__footer {
+  margin-top: auto; display: flex; align-items: center; justify-content: center; gap: var(--sp-2);
+  padding: var(--sp-8); border-top: 1px solid var(--border); font-size: var(--fs-sm);
+}
+
+@media (max-width: 640px) {
+  .ptg-landing__nav, .ptg-landing__hero, .ptg-landing__games, .ptg-landing__packages { padding-left: var(--sp-4); padding-right: var(--sp-4); }
+}
+
+/* ---- shop configurable plan extras ---- */
+.rst-plan { position: relative; }
+.rst-plan.is-configurable { border-color: var(--border-strong); }
+.rst-plan__badge {
+  position: absolute; top: -9px; left: var(--sp-4);
+  padding: 2px var(--sp-3); border-radius: var(--r-full); font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold); background: var(--gray-1000); color: var(--gray-0);
+}
+.rst-range { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; border-radius: var(--r-full); background: var(--bg-active); outline: none; }
+.rst-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; border-radius: var(--r-full); background: var(--gray-1000); cursor: pointer; border: 2px solid var(--gray-0); }
+.rst-range::-moz-range-thumb { width: 18px; height: 18px; border-radius: var(--r-full); background: var(--gray-1000); cursor: pointer; border: 2px solid var(--gray-0); }
+.rst-field__label { display: flex; align-items: center; justify-content: space-between; font-size: var(--fs-sm); color: var(--text-muted); font-weight: var(--fw-medium); }

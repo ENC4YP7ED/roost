@@ -29,6 +29,11 @@ type Product struct {
 	Backups         int64
 	Active          bool
 	Sort            int64
+	Configurable    bool
+	PricePerGBCents int64
+	MinMemory       int64
+	MaxMemory       int64
+	NestID          *int64
 	CreatedAt       string
 	UpdatedAt       string
 }
@@ -75,6 +80,8 @@ type Order struct {
 	Currency       string
 	ServerID       *int64
 	SubscriptionID *int64
+	ConfigMemory   int64
+	ConfigEgg      int64
 	CreatedAt      string
 	UpdatedAt      string
 	PaidAt         *string
@@ -106,13 +113,15 @@ type Invoice struct {
 
 const productCols = `id, name, description, price_cents, currency, billing_interval, egg_id,
 	node_id, docker_image, memory, swap, disk, io, cpu, databases, allocations, backups,
-	active, sort, created_at, updated_at`
+	active, sort, configurable, price_per_gb_cents, min_memory, max_memory, nest_id,
+	created_at, updated_at`
 
 func scanProduct(row interface{ Scan(...any) error }) (*Product, error) {
 	p := &Product{}
 	err := row.Scan(&p.ID, &p.Name, &p.Description, &p.PriceCents, &p.Currency, &p.BillingInterval,
 		&p.EggID, &p.NodeID, &p.DockerImage, &p.Memory, &p.Swap, &p.Disk, &p.IO, &p.CPU,
-		&p.Databases, &p.Allocations, &p.Backups, &p.Active, &p.Sort, &p.CreatedAt, &p.UpdatedAt)
+		&p.Databases, &p.Allocations, &p.Backups, &p.Active, &p.Sort, &p.Configurable,
+		&p.PricePerGBCents, &p.MinMemory, &p.MaxMemory, &p.NestID, &p.CreatedAt, &p.UpdatedAt)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, ErrNotFound
 	}
@@ -151,11 +160,13 @@ func (s *Store) CreateProduct(p *Product) error {
 	p.CreatedAt, p.UpdatedAt = ts, ts
 	res, err := s.db.Exec(`INSERT INTO products (name, description, price_cents, currency,
 		billing_interval, egg_id, node_id, docker_image, memory, swap, disk, io, cpu, databases,
-		allocations, backups, active, sort, created_at, updated_at)
-		VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+		allocations, backups, active, sort, configurable, price_per_gb_cents, min_memory,
+		max_memory, nest_id, created_at, updated_at)
+		VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
 		p.Name, p.Description, p.PriceCents, p.Currency, p.BillingInterval, p.EggID, p.NodeID,
 		p.DockerImage, p.Memory, p.Swap, p.Disk, p.IO, p.CPU, p.Databases, p.Allocations,
-		p.Backups, p.Active, p.Sort, ts, ts)
+		p.Backups, p.Active, p.Sort, p.Configurable, p.PricePerGBCents, p.MinMemory, p.MaxMemory,
+		p.NestID, ts, ts)
 	if err != nil {
 		return err
 	}
@@ -167,10 +178,12 @@ func (s *Store) UpdateProduct(p *Product) error {
 	p.UpdatedAt = now()
 	_, err := s.db.Exec(`UPDATE products SET name=?, description=?, price_cents=?, currency=?,
 		billing_interval=?, egg_id=?, node_id=?, docker_image=?, memory=?, swap=?, disk=?, io=?,
-		cpu=?, databases=?, allocations=?, backups=?, active=?, sort=?, updated_at=? WHERE id=?`,
+		cpu=?, databases=?, allocations=?, backups=?, active=?, sort=?, configurable=?,
+		price_per_gb_cents=?, min_memory=?, max_memory=?, nest_id=?, updated_at=? WHERE id=?`,
 		p.Name, p.Description, p.PriceCents, p.Currency, p.BillingInterval, p.EggID, p.NodeID,
 		p.DockerImage, p.Memory, p.Swap, p.Disk, p.IO, p.CPU, p.Databases, p.Allocations,
-		p.Backups, p.Active, p.Sort, p.UpdatedAt, p.ID)
+		p.Backups, p.Active, p.Sort, p.Configurable, p.PricePerGBCents, p.MinMemory, p.MaxMemory,
+		p.NestID, p.UpdatedAt, p.ID)
 	return err
 }
 
@@ -217,13 +230,14 @@ func (s *Store) UpsertBillingProfile(p *BillingProfile) error {
 
 const orderCols = `id, uuid, user_id, product_id, provider, provider_ref, status, net_cents,
 	vat_cents, gross_cents, vat_rate, reverse_charge, currency, server_id, subscription_id,
-	created_at, updated_at, paid_at`
+	config_memory, config_egg, created_at, updated_at, paid_at`
 
 func scanOrder(row interface{ Scan(...any) error }) (*Order, error) {
 	o := &Order{}
 	err := row.Scan(&o.ID, &o.UUID, &o.UserID, &o.ProductID, &o.Provider, &o.ProviderRef,
 		&o.Status, &o.NetCents, &o.VATCents, &o.GrossCents, &o.VATRate, &o.ReverseCharge,
-		&o.Currency, &o.ServerID, &o.SubscriptionID, &o.CreatedAt, &o.UpdatedAt, &o.PaidAt)
+		&o.Currency, &o.ServerID, &o.SubscriptionID, &o.ConfigMemory, &o.ConfigEgg,
+		&o.CreatedAt, &o.UpdatedAt, &o.PaidAt)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, ErrNotFound
 	}
@@ -235,9 +249,11 @@ func (s *Store) CreateOrder(o *Order) error {
 	o.CreatedAt, o.UpdatedAt = ts, ts
 	res, err := s.db.Exec(`INSERT INTO orders (uuid, user_id, product_id, provider, provider_ref,
 		status, net_cents, vat_cents, gross_cents, vat_rate, reverse_charge, currency, server_id,
-		subscription_id, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+		subscription_id, config_memory, config_egg, created_at, updated_at)
+		VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
 		o.UUID, o.UserID, o.ProductID, o.Provider, o.ProviderRef, o.Status, o.NetCents, o.VATCents,
-		o.GrossCents, o.VATRate, o.ReverseCharge, o.Currency, o.ServerID, o.SubscriptionID, ts, ts)
+		o.GrossCents, o.VATRate, o.ReverseCharge, o.Currency, o.ServerID, o.SubscriptionID,
+		o.ConfigMemory, o.ConfigEgg, ts, ts)
 	if err != nil {
 		return err
 	}

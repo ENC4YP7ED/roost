@@ -29,8 +29,9 @@ func (a *API) routesApplication(mux *http.ServeMux) {
 	// ---- settings ----
 	mux.HandleFunc("GET /api/application/settings", h(func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]any{
-			"app:name": a.AppName(),
-			"app:url":  a.PanelURL(),
+			"app:name":             a.AppName(),
+			"app:url":              a.PanelURL(),
+			"registration:enabled": a.Store.Setting("registration:enabled", "") == "1",
 		})
 	}))
 	mux.HandleFunc("PATCH /api/application/settings", h(func(w http.ResponseWriter, r *http.Request) {
@@ -40,8 +41,11 @@ func (a *API) routesApplication(mux *http.ServeMux) {
 			return
 		}
 		for k, v := range body {
-			if k == "app:name" || k == "app:url" {
+			switch k {
+			case "app:name", "app:url":
 				a.Store.SetSetting(k, strings.TrimRight(v, "/"))
+			case "registration:enabled":
+				a.Store.SetSetting(k, v)
 			}
 		}
 		writeNoContent(w)

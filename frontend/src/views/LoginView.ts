@@ -11,7 +11,12 @@ import { fetchCaptchaLayers, CaptchaGate, type CaptchaLayer, type CaptchaStack }
  * Cloudflare-style verification gate (invisible layers run silently, visible
  * ones render there), then reaches the credentials card with tokens in hand.
  */
-export function LoginView(onLogin: () => void): HTMLElement {
+export interface LoginOptions {
+  mode?: "login" | "register";
+  onBack?: () => void;
+}
+
+export function LoginView(onLogin: () => void, options: LoginOptions = {}): HTMLElement {
   let card = el("div.rst-connect__card");
   const shell = el("div.rst-connect", el("div.rst-connect__grid"), card);
 
@@ -77,6 +82,8 @@ export function LoginView(onLogin: () => void): HTMLElement {
       brand(),
       el("div.rst-connect__form", user.el, pass.el, btn),
       el("button.rst-connect__link", { onclick: renderForgot }, "Forgot your password?"),
+      el("button.rst-connect__link", { onclick: renderRegister }, "Create an account"),
+      options.onBack ? el("button.rst-connect__link", { onclick: options.onBack }, "← Back to home") : null,
       verifiedNote ?? footer(),
     );
     swapCard(next);
@@ -175,7 +182,46 @@ export function LoginView(onLogin: () => void): HTMLElement {
     );
   }
 
-  renderPassword();
+  function renderRegister() {
+    const first = TextInput({ label: "First name", icon: "user", autofocus: true });
+    const last = TextInput({ label: "Last name", icon: "user" });
+    const username = TextInput({ label: "Username", icon: "at" });
+    const email = TextInput({ label: "Email", icon: "envelope", type: "email" });
+    const pass = TextInput({ label: "Password", icon: "key", type: "password", hint: "At least 8 characters.", onEnter: submit });
+    const btn = Button({ label: "Create account", variant: "primary", icon: "user-plus", block: true, onClick: submit });
+
+    async function submit() {
+      if (!email.value || !username.value || pass.value.length < 8) {
+        pass.setError("Fill in every field; password needs 8+ characters.");
+        return;
+      }
+      btn.disabled = true;
+      try {
+        await auth.register({
+          email: email.value, username: username.value,
+          first_name: first.value, last_name: last.value, password: pass.value,
+        });
+        await finishLogin();
+      } catch (err) {
+        pass.setError(String((err as Error).message));
+        btn.disabled = false;
+      }
+    }
+
+    swapCard(el("div.rst-connect__card",
+      brand("Create your account"),
+      el("div.rst-connect__form",
+        el("div.rst-connect__row", first.el, last.el),
+        username.el, email.el, pass.el, btn,
+      ),
+      el("button.rst-connect__link", { onclick: renderPassword }, "Already have an account? Sign in"),
+      options.onBack ? el("button.rst-connect__link", { onclick: options.onBack }, "← Back to home") : null,
+    ));
+    first.focus();
+  }
+
+  if (options.mode === "register") renderRegister();
+  else renderPassword();
   fetchCaptchaLayers()
     .then((layers) => {
       if (layers.length) {

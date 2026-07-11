@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	_ "modernc.org/sqlite"
@@ -41,8 +42,30 @@ func (s *Store) Close() error { return s.db.Close() }
 func now() string { return time.Now().UTC().Format(time.RFC3339) }
 
 func (s *Store) migrate() error {
-	_, err := s.db.Exec(schema)
-	return err
+	if _, err := s.db.Exec(schema); err != nil {
+		return err
+	}
+	// Additive migrations for databases created before a column existed.
+	// SQLite has no "ADD COLUMN IF NOT EXISTS", so a duplicate-column error is
+	// expected and ignored.
+	for _, stmt := range alterMigrations {
+		if _, err := s.db.Exec(stmt); err != nil &&
+			!strings.Contains(err.Error(), "duplicate column name") {
+			return fmt.Errorf("migration %q: %w", stmt, err)
+		}
+	}
+	return nil
+}
+
+// alterMigrations add columns to tables that predate them.
+var alterMigrations = []string{
+	`ALTER TABLE products ADD COLUMN configurable INTEGER NOT NULL DEFAULT 0`,
+	`ALTER TABLE products ADD COLUMN price_per_gb_cents INTEGER NOT NULL DEFAULT 0`,
+	`ALTER TABLE products ADD COLUMN min_memory INTEGER NOT NULL DEFAULT 1024`,
+	`ALTER TABLE products ADD COLUMN max_memory INTEGER NOT NULL DEFAULT 16384`,
+	`ALTER TABLE products ADD COLUMN nest_id INTEGER`,
+	`ALTER TABLE orders ADD COLUMN config_memory INTEGER NOT NULL DEFAULT 0`,
+	`ALTER TABLE orders ADD COLUMN config_egg INTEGER NOT NULL DEFAULT 0`,
 }
 
 const schema = `
@@ -427,6 +450,11 @@ CREATE TABLE IF NOT EXISTS products (
   backups          INTEGER NOT NULL DEFAULT 0,
   active           INTEGER NOT NULL DEFAULT 1,
   sort             INTEGER NOT NULL DEFAULT 0,
+  configurable        INTEGER NOT NULL DEFAULT 0,   -- customer picks RAM/game
+  price_per_gb_cents  INTEGER NOT NULL DEFAULT 0,   -- added per GiB of RAM
+  min_memory          INTEGER NOT NULL DEFAULT 1024,
+  max_memory          INTEGER NOT NULL DEFAULT 16384,
+  nest_id             INTEGER REFERENCES nests(id), -- game category (configurable)
   created_at       TEXT NOT NULL,
   updated_at       TEXT NOT NULL
 );
@@ -478,6 +506,8 @@ CREATE TABLE IF NOT EXISTS orders (
   currency        TEXT NOT NULL DEFAULT 'EUR',
   server_id       INTEGER REFERENCES servers(id) ON DELETE SET NULL,
   subscription_id INTEGER REFERENCES subscriptions(id) ON DELETE SET NULL,
+  config_memory   INTEGER NOT NULL DEFAULT 0,  -- chosen RAM for a configurable plan
+  config_egg      INTEGER NOT NULL DEFAULT 0,  -- chosen game for a configurable plan
   created_at      TEXT NOT NULL,
   updated_at      TEXT NOT NULL,
   paid_at         TEXT

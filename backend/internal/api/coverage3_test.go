@@ -21,7 +21,10 @@ func TestFileManagerEndpoints(t *testing.T) {
 
 	// Proxied endpoints — wings is offline, so each returns 502, exercising
 	// the proxy path and permission gate.
-	proxied := []struct{ method, path string; body any }{
+	proxied := []struct {
+		method, path string
+		body         any
+	}{
 		{"GET", base + "/list?directory=/", nil},
 		{"GET", base + "/contents?file=server.properties", nil},
 		{"PUT", base + "/rename", map[string]any{"root": "/", "files": []map[string]string{{"from": "a", "to": "b"}}}},
