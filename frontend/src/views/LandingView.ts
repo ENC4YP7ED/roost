@@ -2,6 +2,7 @@ import { el, icon } from "../core/dom.ts";
 import { Button } from "../components/Button.ts";
 import { LoadingState } from "../components/misc.ts";
 import { storefront, type Storefront } from "../api/client.ts";
+import { reveal } from "../util/reveal.ts";
 
 /**
  * Public marketing landing page shown to logged-out visitors: a hero, the
@@ -33,30 +34,30 @@ function render(data: Storefront, opts: { onSignIn: () => void; onRegister: () =
   const hero = el("section.ptg-landing__hero",
     el("div.ptg-landing__grid"),
     el("div.ptg-landing__hero-inner",
-      el("h1.ptg-landing__title", `Game servers, hosted in seconds.`),
-      el("p.ptg-landing__sub", `Deploy ${data.games.length ? countGames(data) : "your favourite"} games on high-performance hardware. Instant setup, full control, pay only for what you need.`),
-      el("div.row", { style: { justifyContent: "center", marginTop: "var(--sp-5)" } },
+      reveal(el("h1.ptg-landing__title", `Game servers, hosted in seconds.`), 40),
+      reveal(el("p.ptg-landing__sub", `Deploy ${data.games.length ? countGames(data) : "your favourite"} games on high-performance hardware. Instant setup, full control, pay only for what you need.`), 120),
+      reveal(el("div.row", { style: { justifyContent: "center", marginTop: "var(--sp-5)" } },
         Button({ label: "See plans", variant: "primary", icon: "arrow-down", size: "lg", onClick: () => document.querySelector(".ptg-landing__packages")?.scrollIntoView({ behavior: "smooth" }) }),
         Button({ label: "Browse games", variant: "default", size: "lg", onClick: () => document.querySelector(".ptg-landing__games")?.scrollIntoView({ behavior: "smooth" }) }),
-      ),
+      ), 200),
     ),
   );
 
   const games = el("section.ptg-landing__games",
-    sectionHead("Games we host", `${data.games.length} game platforms, ${totalEggs(data)} server types`),
+    reveal(sectionHead("Games we host", `${data.games.length} game platforms, ${totalEggs(data)} server types`)),
     el("div.ptg-landing__game-grid",
-      ...data.games.map((g: any) => el("div.ptg-landing__game",
+      ...data.games.map((g: any, i: number) => reveal(el("div.ptg-landing__game",
         el("div.ptg-landing__game-icon", icon(gameIcon(g.name))),
         el("div.ptg-landing__game-name", g.name),
         el("div.ptg-landing__game-eggs.faint", (g.eggs ?? []).slice(0, 4).map((e: any) => e.name).join(" · ") || g.description),
-      )),
+      ), i * 70)),
     ),
   );
 
   const packages = el("section.ptg-landing__packages",
-    sectionHead("Hosting packages", data.enabled ? "Pick a plan or build your own" : "Plans are coming soon"),
+    reveal(sectionHead("Hosting packages", data.enabled ? "Pick a plan or build your own" : "Plans are coming soon")),
     data.enabled && data.packages.length
-      ? el("div.ptg-landing__plan-grid", ...data.packages.map((p: any) => planCard(p, opts)))
+      ? el("div.ptg-landing__plan-grid", ...data.packages.map((p: any, i: number) => reveal(planCard(p, opts), i * 80)))
       : el("p.faint", { style: { textAlign: "center" } }, "No packages are available yet — check back soon."),
   );
 

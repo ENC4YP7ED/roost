@@ -399,32 +399,20 @@ button.rst-breadcrumb__item:hover { background: var(--gray-100); color: var(--te
   .ptg-landing__nav, .ptg-landing__hero, .ptg-landing__games, .ptg-landing__packages { padding-left: var(--sp-4); padding-right: var(--sp-4); }
 }
 
-/* ---- landing entrance choreography ----
- * Hero copy and each card rises + fades in on mount; cards are staggered so
- * the grids assemble left-to-right instead of popping in all at once. */
-@keyframes rst-rise {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.ptg-landing__title,
-.ptg-landing__sub,
-.ptg-landing__hero-inner .row,
-.ptg-landing__section-head,
-.ptg-landing__game,
-.ptg-landing__plan {
+/* ---- scroll-triggered reveal ----
+ * Elements tagged by util/reveal.ts start hidden and rise + fade into place the
+ * first time they scroll into view; elements above the fold reveal on mount.
+ * Per-element stagger is applied inline as transition-delay. */
+.reveal {
   opacity: 0;
-  animation: rst-rise var(--dur-slow) var(--ease) forwards;
+  transform: translateY(16px);
+  transition: opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease);
+  will-change: opacity, transform;
 }
-.ptg-landing__title { animation-delay: 40ms; }
-.ptg-landing__sub { animation-delay: 120ms; }
-.ptg-landing__hero-inner .row { animation-delay: 200ms; }
-.ptg-landing__section-head { animation-delay: 60ms; }
-/* Stagger the cards within each grid. */
-.ptg-landing__game:nth-child(1), .ptg-landing__plan:nth-child(1) { animation-delay: 60ms; }
-.ptg-landing__game:nth-child(2), .ptg-landing__plan:nth-child(2) { animation-delay: 130ms; }
-.ptg-landing__game:nth-child(3), .ptg-landing__plan:nth-child(3) { animation-delay: 200ms; }
-.ptg-landing__game:nth-child(4), .ptg-landing__plan:nth-child(4) { animation-delay: 270ms; }
-.ptg-landing__game:nth-child(n+5) { animation-delay: 340ms; }
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
 
 /* ---- shop configurable plan extras ---- */
 .rst-plan { position: relative; }
