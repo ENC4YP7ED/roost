@@ -9,6 +9,8 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"math/big"
+	"net/http"
+	"net/http/httptest"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -238,5 +240,21 @@ func writeFakeBundle(t *testing.T, dir, key string, notAfter time.Time) {
 	// Sanity: the file really landed where autocert looks for it.
 	if _, err := autocert.DirCache(dir).Get(context.Background(), key); err != nil {
 		t.Fatalf("cache round-trip failed for %s: %v", filepath.Join(dir, key), err)
+	}
+}
+
+func TestHTTPHandlerServesFallback(t *testing.T) {
+	m := New(Config{Domain: "example.com", CacheDir: t.TempDir()})
+	called := false
+	h := m.HTTPHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		called = true
+		w.WriteHeader(http.StatusTeapot)
+	}))
+	// A normal request (not an ACME challenge) reaches the fallback.
+	req := httptest.NewRequest("GET", "http://example.com/", nil)
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if !called || rec.Code != http.StatusTeapot {
+		t.Errorf("fallback not invoked: called=%v code=%d", called, rec.Code)
 	}
 }

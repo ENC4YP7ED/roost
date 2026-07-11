@@ -397,3 +397,18 @@ func TestTruncateLongDaemonErrors(t *testing.T) {
 		t.Errorf("short string was modified: %q", got)
 	}
 }
+
+func TestSystemInformation(t *testing.T) {
+	d := newFakeDaemon(t)
+	d.response = `{"version":"1.11.0","kernel_version":"6.1.0","architecture":"amd64"}`
+	info, err := New(nodeFor(t, d)).SystemInformation()
+	if err != nil {
+		t.Fatalf("SystemInformation: %v", err)
+	}
+	if info["version"] != "1.11.0" {
+		t.Errorf("version = %v", info["version"])
+	}
+	if d.lastPath != "/api/system" {
+		t.Errorf("hit %s, want /api/system", d.lastPath)
+	}
+}

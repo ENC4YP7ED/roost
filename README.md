@@ -155,6 +155,9 @@ make check          # go vet + tsc --noEmit
   and drives Chromium: login, admin area, the new-server flow, the database
   viewer gate, and the security surface.
 
-Coverage: `auth` 91%, `tlsmgr` 94%, `wings` 89%, `billing` 85%, `seed` 76%,
-`store` 62%, `api` 56% (the remainder is largely wings-proxy plumbing exercised
-by the end-to-end suite).
+Coverage (non-vendored code, `-coverpkg` combined): **76%**. Per package:
+`tlsmgr` 96%, `wings` 93%, `auth` 91%, `store` 88%, `billing` 85%, `seed` 76%,
+`api` 71%. The uncovered remainder is dominated by database-error branches
+(unreachable without fault injection) and the vendored database viewer, which
+needs a live MySQL. Every request handler, store query, VAT/invoice path and
+payment-webhook branch is exercised.
